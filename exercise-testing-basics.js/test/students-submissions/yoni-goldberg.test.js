@@ -14,7 +14,7 @@ const jestExtended = require('jest-extended')
 // ⓶ Run the command 'npm run test:dev'
 // ⓷ Within the terminal, type the letter 'p', this allows you to filter tests by he file name. Now type this file name and click 'Enter'
 
-test('👶🏽 This is a playground test 🚂', () => {
+test('👶🏽 This is definitely a playground test 🚂', () => {
     expect(true).toBe(true);
 });
 
