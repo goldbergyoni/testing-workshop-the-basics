@@ -1,8 +1,30 @@
+const configuration = require('./configuration')
+
 let products = [];
 
 class ProductsService {
     calculatePrice(catalogPrice, isOnSale, isPremiumUser) {
         let finalPrice = catalogPrice;
+
+        if (isOnSale) {
+            finalPrice *= 0.9;
+        }
+
+        if (isPremiumUser) {
+            finalPrice *= 0.9;
+        }
+
+        //A bunch of other IF/ELSE
+
+        return finalPrice;
+    }
+
+    calculatePriceWithConfig(catalogPrice, isOnSale, isPremiumUser) {
+        let finalPrice = catalogPrice;
+
+        if (configuration.getConfig().allowDiscount === false) {
+            return catalogPrice;
+        }
 
         if (isOnSale) {
             finalPrice *= 0.9;
