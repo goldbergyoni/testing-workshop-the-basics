@@ -24,18 +24,27 @@ WIFM = 🤑, ✅ = Best practice, 🚀 = Advanced, ‍👯‍ = Analogy, 🖼‍
 
 - Product service - Before testing, let's understand the code that we will about to test. It's the same code that we tested with unit but now I've wrapped with API & pseudo DB
 - Two methods definition - API contains two routes, let's see them in POSTMAN tool, the first is adding product, this is a POST request, the URL and this is the body payload. This is they get products by category...
-- Two methods code - Let's see the backend implementation, this is a typical Express application. If you're not familiar with Express or backend development then... Line by line... We call the products service, the one from before, it validates the products and call the DB layer...In real world tests you should use here real DB with your preferred framework whether it's mongoose/s/t/knex, for the sake of this first demo this code stores thing in-memory and setTimeout
+- Two methods code - Let's see the backend implementation, this is a typical Express application. If you're not familiar with Express or backend development then... Line by line... We call the products service, the one from before, it validates the products and call the DB layer...In real world tests you should use here real DB with your preferred framework whether it's mongoose/s/t/knex, for **the** sake of this first demo this code stores thing in-memory and setTimeout
 - Test it
 
 ## Setup
 
 - Create file - Create add product test, but Hei where do I start the API
 - About the setup phase - Integration tests are very similar to unit test, except the setup phase which requires more work and planning. We will use the beforeAll hook to start it, initialize the app - with express it's easy, if you use n/f/s it will require few lines of code, but eventually it all boils down to having a single object that holds the API referenece and also now it listens on the network
+- Random port - express get its port from env variable, I won't specify this becuase in testing we randomize ports...✅
+- Improve soon - That's OK for a quick test, we will improve few things soon
 
 ## Basics
 
-- Unified object - 🖼‍
-- Inline snapshot - 🖼‍🚀
+- Back to the test
+- First test - add new product, happy path, arrange payload, 
+- Describe - arrange per route 🖼‍
+- Network client - choose your preferred network client, example with supertest and axios, what I like about supertest, show the response payload, test status and body
+- Unified object - Is it successful, let's check, status, body. If we end up with checking too many properties, we can compare objects, let's do it
+- Inline snapshot - Small tip, sometimes you don't remember the payload, inline snapshots can generate the response for you, let's first destruct 🖼‍🚀
+- Make it fail - As always, let's ensure that the tests fail, I'm going to plant a bug and ensure that the test catches it, where should I put the bug? We'll the cool part of component test is that I can put it anywhere, no matter where, data-access. Let's do this in the API layer and forget to return a body, yeah it fails
+- A bug that is not caught - Now I want to show you a special bug that this test won't catch although it should. Comment DAL.save. Will the test pass? hmm, what's wrong with this test?
+- Test 3 things - Look at this test, it tests only the response, in many cases we need to test for 3 things, 🖼‍🚀 show diagram of exits, credit to Roy, we need to test the new state, since it's closely related to what we test here we may include this here, I'll prefer to put it in a dedicated test, let's change the name of this test, le's create a new one... 
 
 ## Teardown
 

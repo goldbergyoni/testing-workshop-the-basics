@@ -1,5 +1,3 @@
-const configuration = require('./configuration')
-
 let products = [];
 
 class ProductsService {
@@ -19,52 +17,45 @@ class ProductsService {
         return finalPrice;
     }
 
-    calculatePriceWithConfig(catalogPrice, isOnSale, isPremiumUser) {
-        let finalPrice = catalogPrice;
+    doesNameExist(candidateName) {
+        const sameNameProducts = products.filter((aProductToCheck) => aProductToCheck.name === candidateName);
 
-        if (configuration.getConfig().allowDiscount === false) {
-            return catalogPrice;
-        }
-
-        if (isOnSale) {
-            finalPrice *= 0.9;
-        }
-
-        if (isPremiumUser) {
-            finalPrice *= 0.9;
-        }
-
-        //A bunch of other IF/ELSE
-
-        return finalPrice;
+        return sameNameProducts.length > 0;
     }
 
-    addProduct(name, price, category) {
-        if (!name || !price) {
-            const errorToThrow = new Error("Some properties are missing");
-            errorToThrow.name = "invalidInput";
-            throw errorToThrow;
-        }
+    async addProduct(newProduct) {
+        // Making it slow and async intentionally to simulate DB work
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                if (!newProduct.name || !newProduct.price) {
+                    const errorToThrow = new Error("Some properties are missing");
+                    errorToThrow.name = "invalidInput";
+                    return reject(errorToThrow);
+                }
+                if (this.doesNameExist(newProduct.name)) {
+                    const errorToThrow = new Error("Name already exists");
+                    errorToThrow.name = "duplicated";
+                    return reject(errorToThrow);
+                }
 
-        const productToAdd = {
-            name,
-            price,
-            category
-        };
+                products.push(newProduct);
 
-        products.push(productToAdd);
+                const response = {
+                    status: 'succeeded'
+                }
 
-
-        return productToAdd;
+                resolve(response);
+            }, 10);
+        })
     }
 
-    async getProducts(category) {
+    async getProductsByName(name) {
         //Intentionally put timeout to make it real async like API/DB call
         return new Promise((resolve, reject) => {
             setTimeout(() => {
-                const result = products.filter((aProduct) => aProduct.category === category);
+                const result = products.filter((aProduct) => aProduct.name === name);
                 resolve(result);
-            }, 0);
+            }, 10);
         });
     }
 
@@ -84,8 +75,3 @@ class ProductsService {
 
 
 module.exports = ProductsService;
-
-
-// if (catalogPrice > 300 && isOnSale && isPremiumUser) {
-//     finalPrice *= 0.85;
-// }
