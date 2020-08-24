@@ -41,7 +41,8 @@ class ProductsService {
                 products.push(newProduct);
 
                 const response = {
-                    status: 'succeeded'
+                    status: 'succeeded',
+                    id: Math.ceil(Math.random())
                 }
 
                 resolve(response);

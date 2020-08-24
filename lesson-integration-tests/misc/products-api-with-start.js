@@ -3,16 +3,28 @@ const util = require('util');
 const bodyParser = require('body-parser');
 const ProductsService = require('./products-service');
 
-// A typical Express setup
-const expressApp = express();
-const router = express.Router();
-expressApp.use(bodyParser.json());
-expressApp.use('/product', router);
-defineAllRoutes(router);
-expressApp.listen(3000);
+let serverConnection;
 
-// Define the routes
-function defineAllRoutes(router) {
+const startAPI = () => {
+    return new Promise((resolve, reject) => {
+        // A typical Express setup
+        const expressApp = express();
+        const router = express.Router();
+        expressApp.use(bodyParser.json());
+        expressApp.use('/product', router);
+        defineAllRoutes(router);
+        //The connection is open, we can return the Express app to the caller
+        serverConnection = expressApp.listen(3000, () => {
+            return resolve(expressApp);
+        })
+    });
+};
+
+const stopAPI = async () => {
+    //serverConnection.close();
+}
+
+const defineAllRoutes = (router) => {
     router.post('/', async (req, res, next) => {
         try {
             console.log(`Products API was called to add new product ${util.inspect(req.body)}`);
@@ -41,4 +53,14 @@ function defineAllRoutes(router) {
     });
 }
 
-module.exports = expressApp;
+process.on('uncaughtException', () => {
+    console.log('Error occured!');
+    // a log of other logic here
+    // and here
+    console.log('Error occured!');
+});
+
+module.exports = {
+    startAPI,
+    stopAPI
+};
