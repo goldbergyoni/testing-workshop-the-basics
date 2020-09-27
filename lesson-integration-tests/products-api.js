@@ -1,19 +1,36 @@
-const express = require('express');
-const util = require('util');
-const bodyParser = require('body-parser');
-const ProductsService = require('./products-service');
+const express = require("express");
+const util = require("util");
+const bodyParser = require("body-parser");
+const ProductsService = require("./products-service");
 
-// A typical Express setup
-const expressApp = express();
-const router = express.Router();
-expressApp.use(bodyParser.json());
-expressApp.use('/product', router);
-defineAllRoutes(router);
-expressApp.listen(3000);
+let expressApp, serverConnection;
 
-// Define the routes
+// 1. A typical Express setup
+async function initializeServer() {
+    return new Promise((resolve, reject) => {
+        expressApp = express();
+        const router = express.Router();
+        expressApp.use(bodyParser.json());
+        expressApp.use("/product", router);
+        defineAllRoutes(router);
+        serverConnection = expressApp.listen(3000, () => {
+            resolve(expressApp);;;
+        });
+    });
+}
+
+async function stopServer() {
+    return new Promise((resolve, reject) => {
+        serverConnection.close(() => {
+            resolve();
+        });
+    });
+}
+
+// 2. Define the routes
 function defineAllRoutes(router) {
-    router.post('/', async (req, res, next) => {
+    // Add new product
+    router.post("/", async (req, res, next) => {
         try {
             console.log(`Products API was called to add new product ${util.inspect(req.body)}`);
 
@@ -22,9 +39,9 @@ function defineAllRoutes(router) {
 
             res.json(newProductResponse).end();
         } catch (error) {
-            if (error.name === 'invalidInput') {
+            if (error.name === "invalidInput") {
                 res.status(400).end();
-            } else if (error.name === 'duplicated') {
+            } else if (error.name === "duplicated") {
                 res.status(409).end();
             } else {
                 res.status(500).end();
@@ -32,13 +49,15 @@ function defineAllRoutes(router) {
         }
     });
 
-
-    // get existing products
-    router.get('/:name', async (req, res, next) => {
+    // Get product by name
+    router.get("/:name", async (req, res, next) => {
         console.log(`Products API was called to get product by name ${req.params.name}`);
         const resultProduct = await new ProductsService().getProductsByName(req.params.name);
         res.json(resultProduct).end();
     });
 }
 
-module.exports = expressApp;
+module.exports = {
+    initializeServer,
+    stopServer,
+};

@@ -1,5 +1,6 @@
 let products = [];
 
+
 class ProductsService {
     calculatePrice(catalogPrice, isOnSale, isPremiumUser) {
         let finalPrice = catalogPrice;
@@ -38,7 +39,7 @@ class ProductsService {
                     return reject(errorToThrow);
                 }
 
-                products.push(newProduct);
+                 products.push(newProduct);;
 
                 const response = {
                     status: 'succeeded',
