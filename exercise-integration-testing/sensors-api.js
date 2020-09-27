@@ -4,7 +4,8 @@ const axios = require("axios");
 const bodyParser = require("body-parser");
 const sensorsDal = require("./sensors-dal");
 
-const initializeAPI = (expressApp) => {
+const initializeAPI = () => {
+  const expressApp = express();
   const router = express.Router();
   expressApp.use(
     bodyParser.urlencoded({
@@ -12,11 +13,15 @@ const initializeAPI = (expressApp) => {
     })
   );
   expressApp.use(bodyParser.json());
+  expressApp.listen();
 
   // add new event
   router.post("/sensor-events", async (req, res, next) => {
     console.log(`Sensors events was called to add new event ${util.inspect(req.body)}`);
-    const { temperature, category } = req.body;
+    const {
+      temperature,
+      category
+    } = req.body;
 
     // validation
     if (!temperature || !category) {
@@ -42,6 +47,10 @@ const initializeAPI = (expressApp) => {
   });
 
   expressApp.use("/", router);
+
+  return expressApp;
 };
 
-module.exports = initializeAPI;
+module.exports = {
+  initializeAPI
+};
