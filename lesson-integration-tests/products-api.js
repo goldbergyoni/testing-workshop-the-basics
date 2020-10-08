@@ -13,8 +13,8 @@ async function initializeServer() {
         expressApp.use(bodyParser.json());
         expressApp.use("/product", router);
         defineAllRoutes(router);
-        serverConnection = expressApp.listen(3000, () => {
-            resolve(expressApp);;;
+        serverConnection = expressApp.listen(() => {
+            resolve(expressApp);
         });
     });
 }

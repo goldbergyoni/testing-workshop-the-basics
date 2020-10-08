@@ -13,7 +13,7 @@ beforeAll(() => {
 beforeEach(() => {
     nock("http://localhost").get("/notification").reply(200, {
         success: true,
-    });
+    }).persist();
 });
 
 describe("Order API #component", () => {

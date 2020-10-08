@@ -2,6 +2,8 @@ const configuration = require('./configuration')
 
 let products = [];
 
+class InvalidInputError extends Error {}
+
 class ProductsService {
     calculatePrice(catalogPrice, isOnSale, isPremiumUser) {
         let finalPrice = catalogPrice;
@@ -41,7 +43,7 @@ class ProductsService {
 
     addProduct(name, price, category) {
         if (!name || !price) {
-            const errorToThrow = new Error("Some properties are missing");
+            const errorToThrow = new Error("Something else");
             errorToThrow.name = "invalidInput";
             throw errorToThrow;
         }

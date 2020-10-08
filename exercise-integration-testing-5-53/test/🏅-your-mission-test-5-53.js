@@ -18,6 +18,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
+    // 📗 Reading exercise: Why is this needed 👇? Read about npm/nock 
     nock("http://localhost").get("/notification").reply(200, {
         success: true,
     });
@@ -30,7 +31,6 @@ describe('Sensors test', () => {
     test('When category is not specified, should get http 400 error', async () => {
         //Arrange
         const eventToAdd = {
-            category: 'kids-room',
             temperature: 20,
             name: 'Thermostat-temperature', //This must be unique
             color: 'Green',
@@ -39,10 +39,12 @@ describe('Sensors test', () => {
         };
 
         //Act
+        const receivedResponse = await request(expressApp).post("/sensor-events").send(eventToAdd);
         // 💡 TIP: use any http client lib like Axios OR supertest
         // 💡 TIP: This is how it is done with Supertest -> await request(expressApp).post("/sensor-events").send(eventToAdd);
 
         //Assert
+        expect(receivedResponse.status).toBe(400);
         // 💡 TIP: verify that status is 400
     });
 
