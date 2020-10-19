@@ -1,3 +1,4 @@
+const axios = require("axios");
 const nock = require("nock");
 const sinon = require("sinon");
 const ProductsService = require("../products-service");
@@ -36,7 +37,9 @@ test("When adding a valid new Product, then SMS is sent", async () => {
   /// Arrange
   const productServiceUnderTest = new ProductsService();
   sinon.restore();
-  const spyOnSMS = sinon.stub(SMSSender, "sendSMS").returns(Promise.resolve({ succeded: true }));
+  const spyOnSMS = sinon.stub(SMSSender, "sendSMS").returns(Promise.resolve({
+    succeeded: true
+  }));
 
   // Act
   await productServiceUnderTest.addProduct("Peace & War", 180, "Books");
@@ -44,4 +47,3 @@ test("When adding a valid new Product, then SMS is sent", async () => {
   // Assert
   expect(spyOnSMS.called).toBe(true);
 });
-

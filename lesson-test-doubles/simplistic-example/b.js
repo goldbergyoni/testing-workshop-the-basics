@@ -1,5 +1,5 @@
 const methodOfFileB = () => {
-    return '🙂💪 Im the real B, your mocking just failed 😅';
+    return "❗️💰🤔 The real B was called❗️"
 }
 
 module.exports.methodOfFileB = methodOfFileB;
