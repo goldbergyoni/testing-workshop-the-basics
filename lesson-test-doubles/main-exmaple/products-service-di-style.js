@@ -1,16 +1,19 @@
 const axios = require("axios");
 const productDataAccess = require("./product-data-access");
-const SMSSender = require("./sms-sender");
+const defaultSMSSender = require("./sms-sender");
 const smsSenderInASingleFunction = require("./sms-sender-in-a-single-function");
 
 class ProductsService {
 
-  async getProductByName(name) {
-    return await productDataAccess.getProductByName(name);
+  constructor(customSMSProvider) {
+    if (customSMSProvider) {
+      this.ChosenSMSProvider = customSMSProvider;
+    } else {
+      this.ChosenSMSProvider = defaultSMSSender;
+    }
   }
 
   async addProduct(name, price, category, postAddHook = () => null) {
-    console.log("Product service was called to add a new product");
     if (!name || !price) {
       const errorToThrow = new Error("Something else");
       errorToThrow.name = "invalidInput";
@@ -23,11 +26,11 @@ class ProductsService {
       category,
     };
 
-    await productDataAccess.saveProduct(productToAdd, false);
+    productDataAccess.saveProduct(productToAdd);
 
     //Let's do some notification stuff
     try {
-      SMSSender.sendSMS("Hey, a new product was just added");
+      this.ChosenSMSProvider.sendSMS("Hey, a new product was just added");
     } catch (e) {
       console.log('Not crashing, still want to save the new product so');
     }

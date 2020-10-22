@@ -1,15 +1,22 @@
 const products = [];
 
 class ProductDataAccess {
-    async saveProduct(newProduct) {
-        products.push(newProduct);
+    async saveProduct(newProduct, overrideExisting) {
+        console.log('DAL layer was called to save a new product');
+        return await this.internallySaveProduct(newProduct, overrideExisting);
     }
 
-    async getProducts(category) {
+    async internallySaveProduct(newProduct, overrideExisting) {
+        products.push(newProduct);
+        return Promise.resolve(null);
+    }
+
+    async getProductByName(name) {
         //Intentionally put timeout to make it real async like API/DB call
         return new Promise((resolve, reject) => {
             setTimeout(() => {
-                const result = products.filter((aProduct) => aProduct.category === category);
+                const foundedBooks = products.filter((aProduct) => aProduct.name === name);
+                const result = foundedBooks.length > 0 ? foundedBooks[0] : null;
                 resolve(result);
             }, 0);
         });
@@ -27,4 +34,4 @@ class ProductDataAccess {
     }
 }
 
-module.exports = ProductDataAccess;
+module.exports = new ProductDataAccess();
