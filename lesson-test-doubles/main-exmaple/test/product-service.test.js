@@ -1,80 +1,70 @@
-const axios = require("axios");
 const nock = require("nock");
 const sinon = require("sinon");
 const productDataAccess = require("../product-data-access");
 const ProductsService = require("../products-service");
 const SMSSender = require("../sms-sender");
 const smsSenderInASingleFunction = require("../sms-sender-in-a-single-function");
+const fs = require("fs");
 
-beforeAll(() => {
-  nock("http://email-service.com")
-    .post("/api")
-    .reply(200, {
-      success: true,
-    })
-    .persist(true);
-});
+beforeAll(async () => {});
+
+afterAll(async () => {});
 
 beforeEach(() => {
+  nock("http://email-service.com").post("/api").reply(200, { succeeded: true });
   sinon.restore();
-  sinon.stub(SMSSender, "sendSMS").returns;
-  Promise.resolve({
-    succeeded: true,
-  });
 });
 
 describe("Add product", () => {
   describe("Happy path", () => {
-    test("When adding a valid new Product, then get a positive response", async () => {
-      /// Arrange
-      const productServiceUnderTest = new ProductsService();
+    test("When adding a valid product, then an email should be sent", async () => {
+      // Arrange
+      const productService = new ProductsService();
+      nock.cleanAll();
+      const emailIntercept = nock("http://email-service.com").post("/api").reply(200, { succeeded: true });
 
       // Act
-      const receivedResponse = await productServiceUnderTest.addProduct("Peace & War", 180, "Books");
+      await productService.addProduct("Harry Potter", 300, "Books");
 
       // Assert
-      expect(receivedResponse.succeeded).toBe(true);
+      expect(emailIntercept.isDone()).toBe(true);
     });
 
-    test("When adding a valid new Product, then SMS is sent (using stub)", async () => {
+    test("When a product is added, then SMS is sent", async () => {
       /// Arrange
       const productServiceUnderTest = new ProductsService();
-      sinon.restore();
-      const spyOnSMS = sinon.stub(SMSSender, "sendSMS").returns(
-        Promise.resolve({
-          succeeded: true,
-        })
-      );
+      const spyOnSMS = sinon.stub(SMSSender, "sendSMS");
 
       // Act
-      await productServiceUnderTest.addProduct("Peace & War", 180, "Books");
+      await productServiceUnderTest.addProduct("War & Peace", 200, "Books");
 
       // Assert
       expect(spyOnSMS.called).toBe(true);
     });
 
-    test("When adding a valid new Product, then SMS is sent (using spy)", async () => {
+    test("When a valid product is added, then its retrievable (⚠✅Good pattern)", async () => {
       /// Arrange
       const productServiceUnderTest = new ProductsService();
-      sinon.restore();
-      const spyOnSMS = sinon.spy(SMSSender, "sendSMS");
+      const newBookName = "War & Peace";
 
       // Act
-      await productServiceUnderTest.addProduct("Peace & War", 180, "Books");
+      await productServiceUnderTest.addProduct(newBookName, 180, "Books");
 
       // Assert
-      expect(spyOnSMS.called).toBe(true);
+      const foundedBook = await productServiceUnderTest.getProductByName(newBookName);
+      expect(foundedBook.name).toBe(newBookName);
     });
 
-    test("When a valid product is added, then it's saved in DB (⚠️Anti-Pattern)", async () => {
+    test("When a valid product is added, then its saved to DB (⚠️Anti pattern)", async () => {
       /// Arrange
       const productServiceUnderTest = new ProductsService();
       const dataAccessMock = sinon.mock(productDataAccess);
       dataAccessMock
         .expects("saveProduct")
         .exactly(1)
-        .withExactArgs({
-            name: "Peace & War",
+        .withExactArgs(
+          {
+            name: "War & Peace",
             price: 180,
             category: "Books",
           },
@@ -83,38 +73,46 @@ describe("Add product", () => {
         .returns(Promise.resolve(null));
 
       // Act
-      productServiceUnderTest.addProduct("Peace & War", 180, "Books");
+      await productServiceUnderTest.addProduct("War & Peace", 180, "Books");
 
       // Assert
       dataAccessMock.verify();
     });
-
-    test("When a valid product is added, then it's retrievable (✅ Better option)", async () => {
-      /// Arrange
-      const productServiceUnderTest = new ProductsService();
-      const newBookName = "Peace & War";
-
-      // Act
-      productServiceUnderTest.addProduct(newBookName, 180, "Books");
-
-      // Assert
-      const foundedBook = await productServiceUnderTest.getProductByName(newBookName);
-      expect(foundedBook.name).toBe(newBookName);
-    });
   });
 
   describe("Corner cases", () => {
-    test("When SMS sending fails, then the response is successful", async () => {
+    test("When adding invalid product, then no email should be sent", async () => {
       /// Arrange
       const productServiceUnderTest = new ProductsService();
-      sinon.restore();
-      sinon.stub(SMSSender, "sendSMS").throws(new Error("No SMS for you"));
+      const productNameWhichIsEmpty = undefined;
+      nock.cleanAll();
+      const emailRequestIntercept = nock("http://email-service.com").post("/api").reply(200, {
+        success: true,
+      });
 
       // Act
-      const receivedResponse = await productServiceUnderTest.addProduct("Peace & War", 180, "Books");
+      try {
+        await productServiceUnderTest.addProduct(productNameWhichIsEmpty, 200, "Books");
+      } catch (e) {
+        //ignore errors, we care only about the email
+      }
+      
 
       // Assert
-      expect(receivedResponse.succeeded).toBe(true);
+      expect(emailRequestIntercept.isDone()).toBe(false);
+    });
+
+    test("When SMS sending fails, then response is still valid", async () => {
+      /// Arrange
+      const productServiceUnderTest = new ProductsService();
+      //Simulate SMS failure
+      sinon.stub(SMSSender, "sendSMS").throws(new Error("No SMS for you!"));
+
+      // Act
+      const receivedResult = await productServiceUnderTest.addProduct("War & Peace", 200, "Books");
+
+      // Assert
+      expect(receivedResult.succeeded).toBe(true);
     });
   });
 });

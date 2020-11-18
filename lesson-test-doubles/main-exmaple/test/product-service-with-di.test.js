@@ -15,28 +15,25 @@ beforeAll(() => {
 
 beforeEach(() => {
   sinon.restore();
-  sinon.stub(SMSSender, "sendSMS").returns;
-  Promise.resolve({
-
-    succeeded: true,
-  });
 });
+
+
+
 
 describe('Add product', () => {
   describe('Happy path', () => {
-    test("When adding a valid new Product, then SMS is sent (using spy)", async () => {
-      // Arrange
-      sinon.restore();
-      const doubleSMSProvider = {
+    test('When a product is added, then SMS is sent', async () => {
+      /// Arrange
+      const doubleSMSSender = {
         sendSMS: sinon.spy()
-      };
-      const productService = new ProductsService(doubleSMSProvider);
+      }
+      const productServiceUnderTest = new ProductsService(doubleSMSSender);
 
       // Act
-      await productService.addProduct("Peace & War", 180, "Books");
+      await productServiceUnderTest.addProduct("War & Peace", 200, "Books");
 
       // Assert
-      expect(doubleSMSProvider.sendSMS.called).toBe(true);
+      expect(doubleSMSSender.sendSMS.called).toBe(true);
     });
   });
 });

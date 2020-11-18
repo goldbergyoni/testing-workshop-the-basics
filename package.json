@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest --detectOpenHandles",
     "test:dev": "jest --watch --verbose --silent",
-    "test:dev:verbose": "jest --watch --verbose"
+    "test:dev:verbose": "jest --watch --verbose",
+    "test:withDocker": "docker run -n myMongo -d mongo -storageEngine inMemory && npm t"
   },
   "author": "",
   "license": "ISC",

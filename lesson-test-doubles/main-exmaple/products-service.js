@@ -4,7 +4,6 @@ const SMSSender = require("./sms-sender");
 const smsSenderInASingleFunction = require("./sms-sender-in-a-single-function");
 
 class ProductsService {
-
   async getProductByName(name) {
     return await productDataAccess.getProductByName(name);
   }
@@ -12,7 +11,7 @@ class ProductsService {
   async addProduct(name, price, category, postAddHook = () => null) {
     console.log("Product service was called to add a new product");
     if (!name || !price) {
-      const errorToThrow = new Error("Something else");
+      const errorToThrow = new Error("Invalid input");
       errorToThrow.name = "invalidInput";
       throw errorToThrow;
     }
@@ -29,12 +28,13 @@ class ProductsService {
     try {
       SMSSender.sendSMS("Hey, a new product was just added");
     } catch (e) {
-      console.log('Not crashing, still want to save the new product so');
+      console.log("Not crashing, still want to save the new product so");
     }
     await axios.post(`http://email-service.com/api`, {
       title: "New product",
       body: "A new product was added",
     });
+
     postAddHook();
 
     return {
