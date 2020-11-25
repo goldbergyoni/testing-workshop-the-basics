@@ -1,7 +1,7 @@
 const axios = require("axios");
 const productDataAccess = require("./product-data-access");
+const SMSSenderWithSingleFunction = require("./sms-sender-in-a-single-function");
 const SMSSender = require("./sms-sender");
-const smsSenderInASingleFunction = require("./sms-sender-in-a-single-function");
 
 class ProductsService {
   async getProductByName(name) {
@@ -26,9 +26,10 @@ class ProductsService {
 
     //Let's do some notification stuff
     try {
-      SMSSender.sendSMS("Hey, a new product was just added");
+      const SMSResponse = SMSSender.sendSMS("Hey, a new product was just added");
+
     } catch (e) {
-      console.log("Not crashing, still want to save the new product so");
+      console.log("Not crashing, still want to save the new product so", e);
     }
     await axios.post(`http://email-service.com/api`, {
       title: "New product",

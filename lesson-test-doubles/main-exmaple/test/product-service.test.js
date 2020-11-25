@@ -1,12 +1,13 @@
+const proxyquire = require("proxyquire").noCallThru();
 const nock = require("nock");
 const sinon = require("sinon");
 const productDataAccess = require("../product-data-access");
 const ProductsService = require("../products-service");
 const SMSSender = require("../sms-sender");
-const smsSenderInASingleFunction = require("../sms-sender-in-a-single-function");
-const fs = require("fs");
 
-beforeAll(async () => {});
+beforeAll(async () => {
+  nock.enableNetConnect("127.0.0.1:83665");
+});
 
 afterAll(async () => {});
 
@@ -21,7 +22,9 @@ describe("Add product", () => {
       // Arrange
       const productService = new ProductsService();
       nock.cleanAll();
-      const emailIntercept = nock("http://email-service.com").post("/api").reply(200, { succeeded: true });
+      const emailIntercept = nock("http://email-service.com").post("/api").reply(200, {
+        success: true,
+      });
 
       // Act
       await productService.addProduct("Harry Potter", 300, "Books");
@@ -41,6 +44,7 @@ describe("Add product", () => {
       // Assert
       expect(spyOnSMS.called).toBe(true);
     });
+
 
     test("When a valid product is added, then its retrievable (⚠✅Good pattern)", async () => {
       /// Arrange
@@ -96,7 +100,6 @@ describe("Add product", () => {
       } catch (e) {
         //ignore errors, we care only about the email
       }
-      
 
       // Assert
       expect(emailRequestIntercept.isDone()).toBe(false);
@@ -106,7 +109,9 @@ describe("Add product", () => {
       /// Arrange
       const productServiceUnderTest = new ProductsService();
       //Simulate SMS failure
-      sinon.stub(SMSSender, "sendSMS").throws(new Error("No SMS for you!"));
+      sinon.stub(SMSSender, "sendSMS").callsFake(() => {
+        //custom logic comes here
+      });
 
       // Act
       const receivedResult = await productServiceUnderTest.addProduct("War & Peace", 200, "Books");

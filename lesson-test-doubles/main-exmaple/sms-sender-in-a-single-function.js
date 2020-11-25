@@ -1,5 +1,5 @@
 module.exports = async () => {
-    console.log(`‼️ ☎️ 📱 Real SMS sender which incur costs`);
+    console.log(`‼️ ☎️ 📱 The real SMS sender which might incur costs`);
 
     return {
         succeeded: true

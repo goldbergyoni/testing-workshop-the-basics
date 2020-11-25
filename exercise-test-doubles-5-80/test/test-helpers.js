@@ -10,9 +10,9 @@ module.exports = {
             destination: countriesList.countries.US,
             startDate: '30/12/2019',
             endDate: '02/02/2020',
-            photos: [],
-            tips: [],
-            slogan: '',
+            photos: ['beach.jpg'],
+            tips: ['Must eat at the Italian restaurant!'],
+            slogan: 'It was amazing',
             background: 'green-grass'
         }, overrides);
     },
