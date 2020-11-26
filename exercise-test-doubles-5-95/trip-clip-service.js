@@ -66,7 +66,7 @@ function TripClipService(
       //   result.succeed = false;
       //   return result;
       // }
-      // result.succeed = true;
+      result.succeed = true;
 
       return result;
     } catch (err) {

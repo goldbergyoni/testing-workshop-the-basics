@@ -21,13 +21,14 @@ test("When the instructions are valid, then get back a successful response", asy
   const clipInstructions = testHelper.factorClipInstructions({
     creator: { name: "Yoni" },
     destination: "Mexico",
-    slogan: "It was great",
   });
   const tripClipServiceUnderTest = new TripClipService();
 
   // Act
+  const receivedResult = await tripClipServiceUnderTest.generateClip(clipInstructions);
 
   // Assert
+  expect(receivedResult.succeed).toBe(true);
 });
 
 // ✅ TASK: Test that when a clip was generated successfully, an email is sent to the creator
@@ -40,6 +41,13 @@ test("When video instructions are valid, then a success email should be sent to 
     destination: "Mexico",
   });
   const tripClipServiceUnderTest = new TripClipService();
+  const spyOnMailer = sinon.spy(mailSender, "send");
+
+  // Act
+  await tripClipServiceUnderTest.generateClip(clipInstructions);
+
+  // Assert
+  expect(spyOnMailer.called).toBe(true);
 });
 
 // ✅ TASK: In the last test above, ensure that the right params were passed. Consider whether to check that exact values or the param existence and types
