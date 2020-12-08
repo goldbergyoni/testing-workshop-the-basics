@@ -29,14 +29,14 @@ class ProductsService {
       productRequest.vendorName,
       productRequest.vendorProductId
     );
-    const taxType = getTaxType(vendorDetails.productionCountry, vendorDetails.productCategory);
+
     productToSave.price = new PriceCalculator().calculatePrice(
       vendorDetails.popularity,
       vendorDetails.vendorPrice,
       config.desiredProfit,
-      taxType,
       vendorDetails.returnRate,
-      vendorDetails.storageSizeInCC
+      vendorDetails.storageSizeInCC,
+      vendorDetails.productionCountry
     );
 
     // 📦 Let's save in DB
