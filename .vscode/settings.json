@@ -1,3 +1,11 @@
 {
-    "git.enabled": false
+    "git.enabled": false,
+    "template-string-converter.validLanguages": [
+        "typescript",
+        "javascript",
+        "typescriptreact",
+        "javascriptreact"
+    ],
+    "editor.codeActionsOnSave": null,
+    "editor.formatOnSave": true
 }

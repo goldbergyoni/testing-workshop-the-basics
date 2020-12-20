@@ -6,6 +6,7 @@ test("When the country has custom tax regulations, then get back special-agreeme
   // Act
   const receivedResult = getTaxType("Thailand");
 
+
   // Assert
   expect(receivedResult).toBe("special-agreement");
 });

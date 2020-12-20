@@ -1,9 +1,8 @@
+const axios = require("axios");
 const productDataAccess = require("../data-access/data-access");
-const { getTaxType } = require("./tax-classifier");
 const config = require("./config");
 const PriceCalculator = require("./price-calculator");
-
-let products = [];
+const SMSSender = require("../../lesson-test-doubles/main-exmaple/sms-sender");
 
 class ProductsService {
   doesNameExist(candidateName) {
@@ -24,7 +23,7 @@ class ProductsService {
     productToSave.name = productRequest.name;
     productToSave.category = productRequest.category;
 
-    // 💰💸 Calculate the price for
+    // 💰💸 Calculate the price
     const vendorDetails = await productDataAccess.getVendorProductDetails(
       productRequest.vendorName,
       productRequest.vendorProductId
@@ -40,7 +39,13 @@ class ProductsService {
     );
 
     // 📦 Let's save in DB
-    products.push(productToSave);
+    await productDataAccess.addProduct(productToSave);
+
+    // await axios.post(`http://email-service.com/api`, {
+    //   title: "New product",
+    //   body: "A new product was added",
+    // });
+    SMSSender.sendSMS("Hey, a new product was just added");
 
     return productToSave;
   }

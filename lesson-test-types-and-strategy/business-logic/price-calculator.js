@@ -9,7 +9,7 @@ class PriceCalculator {
     const taxType = getTaxType(productionCountry);
     let finalPrice = vendorPrice + vendorPrice * desiredProfitRate;
     // 🌶 If this product is so popular and reliable, let's apply a big discount
-    console.log("foo", taxType, popularity, returnRate);
+
     if (popularity > 0.9 && returnRate < 0.1 && taxType === "normal") {
       finalPrice = finalPrice * 0.8;
     }

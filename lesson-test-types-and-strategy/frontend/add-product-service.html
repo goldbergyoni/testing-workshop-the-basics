@@ -1,0 +1,21 @@
+<script>
+async function addProduct(name, category, vendor, productId) {
+  const theNewProductToAdd = { name, category, vendor, productId };
+
+  return await fetch("http://localhost:3000/product", {
+    method: "POST", // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      "Content-Type": "application/json",
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: JSON.stringify(theNewProductToAdd), // body data type must match "Content-Type" header
+  });
+}
+</script>
+
+
+<html>
+  <body>
+    <input type="button" value="Add product" onclick="addProduct('foo', 'foo', 'foo', 'foo')"/>
+  </body>
+</html>

@@ -1,10 +1,18 @@
-const axios = require("axios");
+const nock = require("nock");
+const sinon = require("sinon");
 const supertest = require("supertest");
 const { initializeServer, stopServer } = require("../api/products-api");
+const config = require("../business-logic/config");
+const dataAccess = require("../data-access/data-access");
 let expressApp;
 beforeAll(async (done) => {
   expressApp = await initializeServer();
   done();
+});
+
+beforeEach(() => {
+  nock("http://email-service.com").post("/api").reply(200, { succeeded: true });
+  sinon.restore();
 });
 
 afterAll(async (done) => {
@@ -34,5 +42,32 @@ describe("Integration tests", () => {
         price: expect.any(Number),
       },
     });
+  });
+
+  // ⚠️ Anti-Pattern: This is a false attempt to perform a unit test from 10,000ft level
+  test("When highly popular and low return rate, then assign 20% discount to product", async () => {
+    /// Arrange
+    const productToAdd = {
+      name: "Dracula",
+      category: "books",
+      vendorName: "Green-Books",
+      vendorProductId: "1a-bc-23",
+    };
+    sinon.stub(dataAccess, "getVendorProductDetails").returns({
+      popularity: 0.95,
+      vendorPrice: 100,
+      returnRate: 0.05,
+      color: "blue",
+      storageSizeInCC: 200,
+      productionCountry: "China",
+      productCategory: "Books",
+    });
+    config.desiredProfit = 0;
+
+    // Act
+    const receivedResponse = await supertest(expressApp).post("/product").send(productToAdd);
+
+    // Assert
+    expect(receivedResponse.body.price).toBe(80);
   });
 });

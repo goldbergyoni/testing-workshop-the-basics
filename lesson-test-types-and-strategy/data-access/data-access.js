@@ -16,12 +16,7 @@ class ProductDataAccess {
           errorToThrow.name = "invalidInput";
           return reject(errorToThrow);
         }
-        if (this.doesNameExist(newProduct.name)) {
-          const errorToThrow = new Error("Name already exists");
-          errorToThrow.name = "duplicated";
-          return reject(errorToThrow);
-        }
-
+        
         products.push(newProduct);
 
         const response = {
@@ -56,6 +51,23 @@ class ProductDataAccess {
       }, 10);
     });
   }
+
+  async updateProduct(id, newName, newPrice){
+    
+  }
 }
 
 module.exports = new ProductDataAccess();
+
+
+
+
+
+
+
+
+
+
+
+
+

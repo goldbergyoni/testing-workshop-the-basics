@@ -1,4 +1,3 @@
-const proxyquire = require("proxyquire").noCallThru();
 const nock = require("nock");
 const sinon = require("sinon");
 const productDataAccess = require("../product-data-access");
@@ -6,7 +5,6 @@ const ProductsService = require("../products-service");
 const SMSSender = require("../sms-sender");
 
 beforeAll(async () => {
-  nock.enableNetConnect("127.0.0.1:83665");
 });
 
 afterAll(async () => {});
