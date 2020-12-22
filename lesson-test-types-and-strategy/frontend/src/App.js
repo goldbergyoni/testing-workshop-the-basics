@@ -31,7 +31,7 @@ function App() {
       if(e.response.status === 500){
         setApiError('❗️Some properties are missing')
       } else if(e.response.status === 400){
-        setApiError('❗️Save failed, product does not exist’. Here’s an existing product')
+        setApiError('❗️Save failed, product does not exist’. Here’s an existing product "camera-2"')
       }
     }
   };
