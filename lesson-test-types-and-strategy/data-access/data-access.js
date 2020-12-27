@@ -16,7 +16,7 @@ class ProductDataAccess {
           errorToThrow.name = "invalidInput";
           return reject(errorToThrow);
         }
-        
+
         products.push(newProduct);
 
         const response = {
@@ -25,7 +25,7 @@ class ProductDataAccess {
         };
 
         resolve(response);
-      }, 10);
+      }, 20);
     });
   }
 
@@ -52,22 +52,7 @@ class ProductDataAccess {
     });
   }
 
-  async updateProduct(id, newName, newPrice){
-    
-  }
+  async updateProduct(id, newName, newPrice) {}
 }
 
 module.exports = new ProductDataAccess();
-
-
-
-
-
-
-
-
-
-
-
-
-

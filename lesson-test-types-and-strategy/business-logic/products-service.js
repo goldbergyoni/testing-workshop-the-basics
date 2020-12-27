@@ -5,6 +5,12 @@ const PriceCalculator = require("./price-calculator");
 const SMSSender = require("../../lesson-test-doubles/main-exmaple/sms-sender");
 
 class ProductsService {
+  constructor(dataAccessProvider, SMSProvider, priceCalculatorProvider) {
+    this.dataAccessProvider = dataAccessProvider || productDataAccess;
+    this.SMSProvider = SMSProvider || SMSSender;
+    this.priceCalculator = priceCalculatorProvider || new PriceCalculator();
+  }
+
   doesNameExist(candidateName) {
     const sameNameProducts = products.filter((aProductToCheck) => aProductToCheck.name === candidateName);
 
@@ -41,10 +47,10 @@ class ProductsService {
     // 📦 Let's save in DB
     await productDataAccess.addProduct(productToSave);
 
-    // await axios.post(`http://email-service.com/api`, {
-    //   title: "New product",
-    //   body: "A new product was added",
-    // });
+    await axios.post(`http://email-service.com/api`, {
+      title: "New product",
+      body: "A new product was added",
+    });
     SMSSender.sendSMS("Hey, a new product was just added");
 
     return productToSave;
