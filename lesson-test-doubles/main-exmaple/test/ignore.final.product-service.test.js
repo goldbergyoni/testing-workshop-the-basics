@@ -25,7 +25,6 @@ beforeEach(() => {
 
 describe("Add product", () => {
   describe("Happy path", () => {
-
     test("When adding a valid product, then an email should be sent", async () => {
       /// Arrange
       const productServiceUnderTest = new ProductsService();
@@ -40,7 +39,7 @@ describe("Add product", () => {
       // Assert
       expect(emailRequestIntercept.isDone()).toBe(true);
     });
-    
+
     test("When adding a valid new Product, then get a positive response", async () => {
       /// Arrange
       const productServiceUnderTest = new ProductsService();
@@ -56,7 +55,7 @@ describe("Add product", () => {
       // Arrange
       sinon.restore();
       const doubleSMSProvider = {
-        sendSMS: sinon.spy()
+        sendSMS: sinon.spy(),
       };
       const productService = new ProductsService(doubleSMSProvider);
 
@@ -104,7 +103,8 @@ describe("Add product", () => {
       dataAccessMock
         .expects("saveProduct")
         .exactly(1)
-        .withExactArgs({
+        .withExactArgs(
+          {
             name: "Peace & War",
             price: 180,
             category: "Books",
@@ -135,6 +135,21 @@ describe("Add product", () => {
   });
 
   describe("Corner cases", () => {
+    test("When adding a product on 1st day of a month, an error is thrown back", async () => {
+      // Arrange
+      const productServiceUnderTest = new ProductsService();
+      const firstDayOfMonth = new Date().setDate(1);
+      sinon.useFakeTimers(firstDayOfMonth);
+
+      // Act
+      const addProductMethod = async () => {
+        return await productServiceUnderTest.addProduct("War & Peace", 200, "Books");
+      };
+
+      // Assert
+      await expect(addProductMethod).rejects.toEqual(new Error("No new products on Month 1st"));
+    });
+
     test("When SMS sending fails, then the response is successful", async () => {
       /// Arrange
       const productServiceUnderTest = new ProductsService();

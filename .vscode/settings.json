@@ -7,5 +7,6 @@
         "javascriptreact"
     ],
     "editor.codeActionsOnSave": null,
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "files.autoSaveDelay": 1800
 }

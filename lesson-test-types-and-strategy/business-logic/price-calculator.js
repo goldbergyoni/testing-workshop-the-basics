@@ -1,6 +1,6 @@
 const roundTo = require("round-to");
 const { getTaxType } = require("./tax-classifier");
-
+    
 class PriceCalculator {
   calculatePrice(popularity, vendorPrice, desiredProfitRate, returnRate, storageSize, productionCountry) {
     const taxType = getTaxType(productionCountry);

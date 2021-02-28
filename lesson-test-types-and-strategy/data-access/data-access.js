@@ -11,12 +11,6 @@ class ProductDataAccess {
     // Making it slow and async intentionally to simulate DB work
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        if (!newProduct.name || !newProduct.price) {
-          const errorToThrow = new Error("Some properties are missing");
-          errorToThrow.name = "invalidInput";
-          return reject(errorToThrow);
-        }
-
         products.push(newProduct);
 
         const response = {
@@ -25,7 +19,7 @@ class ProductDataAccess {
         };
 
         resolve(response);
-      }, 20);
+      }, 25);
     });
   }
 

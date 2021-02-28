@@ -1,16 +1,25 @@
 const PriceCalculator = require("./price-calculator");
 
-describe("Main examples", () => {
-  test("When highly popular and low return rate, then assign 20% discount", () => {
+describe("Unit test", () => {
+  test("When highly popular, low return rate and no tax restrictions, then get 20% discount", () => {
     // Arrange
-    const priceCalculator = new PriceCalculator();
-    const highlyPopularRank = 0.95;
+    const highlyPopularRate = 0.99;
     const lowReturnRate = 0.05;
+    const countryWithoutTaxRestrictions = "India";
+    const basePriceBeforeDiscount = 100;
+    const priceCalculator = new PriceCalculator();
 
     // Act
-    const receivedResult = priceCalculator.calculatePrice(highlyPopularRank, 100, 0, lowReturnRate, 1, "India");
+    const receivedPrice = priceCalculator.calculatePrice(
+      highlyPopularRate,
+      basePriceBeforeDiscount,
+      0,
+      lowReturnRate,
+      100,
+      countryWithoutTaxRestrictions
+    );
 
     // Assert
-    expect(receivedResult).toBe(80);
+    expect(receivedPrice).toBe(basePriceBeforeDiscount * 0.8);
   });
 });

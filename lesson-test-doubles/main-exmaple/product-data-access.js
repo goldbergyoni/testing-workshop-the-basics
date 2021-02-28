@@ -3,10 +3,10 @@ const products = [];
 class ProductDataAccess {
     async saveProduct(newProduct, overrideExisting) {
         console.log('DAL layer was called to save a new product');
-        return await this.internallySaveProduct(newProduct, overrideExisting);
+        return await this.internallySaveProduct(newProduct);
     }
 
-    async internallySaveProduct(newProduct, overrideExisting) {
+    async internallySaveProduct(newProduct) {
         products.push(newProduct);
         return Promise.resolve(null);
     }

@@ -1,16 +1,19 @@
 const nock = require("nock");
 const sinon = require("sinon");
 const productDataAccess = require("../product-data-access");
-const ProductsService = require("../products-service");
 const SMSSender = require("../sms-sender");
+const sendSMSMethod = sinon.stub(SMSSender, "sendSMS");
+const ProductsService = require("../products-service");
 
-beforeAll(async () => {
-});
+beforeAll(async () => {});
 
 afterAll(async () => {});
 
 beforeEach(() => {
   nock("http://email-service.com").post("/api").reply(200, { succeeded: true });
+});
+
+afterEach(() => {
   sinon.restore();
 });
 
@@ -40,9 +43,8 @@ describe("Add product", () => {
       await productServiceUnderTest.addProduct("War & Peace", 200, "Books");
 
       // Assert
-      expect(spyOnSMS.called).toBe(true);
+      expect(sendSMSMethod.called).toBe(true);
     });
-
 
     test("When a valid product is added, then its retrievable (⚠✅Good pattern)", async () => {
       /// Arrange

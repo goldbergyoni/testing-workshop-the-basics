@@ -2,6 +2,8 @@ const axios = require("axios");
 const productDataAccess = require("./product-data-access");
 const SMSSenderWithSingleFunction = require("./sms-sender-in-a-single-function");
 const SMSSender = require("./sms-sender");
+const { sendSMS } = require("./sms-sender");
+const smsSenderInASingleFunction = require("./sms-sender-in-a-single-function");
 
 class ProductsService {
   async getProductByName(name) {
@@ -16,6 +18,12 @@ class ProductsService {
       throw errorToThrow;
     }
 
+    // Now new products on month 1st day
+    console.log("date", new Date().getDate());
+    if (new Date().getDate() === 1) {
+      throw new Error("No new products on Month 1st");
+    }
+
     const productToAdd = {
       name,
       price,
@@ -26,8 +34,7 @@ class ProductsService {
 
     //Let's do some notification stuff
     try {
-      const SMSResponse = SMSSender.sendSMS("Hey, a new product was just added");
-
+      SMSSender.sendSMS("Hey, a new product was just added");
     } catch (e) {
       console.log("Not crashing, still want to save the new product so", e);
     }

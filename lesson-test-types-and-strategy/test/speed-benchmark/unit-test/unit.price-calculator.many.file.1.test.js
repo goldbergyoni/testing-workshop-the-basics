@@ -15,4 +15,4 @@ describe("Main examples", () => {
       expect(receivedResult).toBe(80);
     });
   }
-});
+})

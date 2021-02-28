@@ -8,6 +8,23 @@ const moduleToTest = {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const sinon = require('sinon')
 
 //The code shadow 🕵🏼‍ Anti-pattern
