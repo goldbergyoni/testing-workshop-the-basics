@@ -13,7 +13,7 @@ const initializeAPI = () => {
     })
   );
   expressApp.use(bodyParser.json());
-  expressApp.listen();
+  // expressApp.listen();
 
   // add new event
   router.post("/sensor-events", async (req, res, next) => {
