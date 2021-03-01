@@ -11,17 +11,24 @@ const mailSender = require("../mail-sender");
 const videoProducer = require("../video-producer");
 const testHelper = require("./test-helpers");
 const DataAccess = require("../data-access");
+jest.mock("../subtitles-provider");
+const subtitlesProvider = require("../subtitles-provider");
 
 // ✅ TASK: Write a simple test against the trip clip service "generateClip" method- When valid input, then get back a valid response
 //Ensure the the test pass
 // 💡 TIP: Here's the test skeleton
 
 beforeEach(() => {
-  sinon.restore();
-  nock.cleanAll();
   nock("http://like-youtube.com")
     .post(/upload.*$/)
     .reply(200, { status: "all-good" });
+  subtitlesProvider.mockReturnValue([{ from: 1, to: 3, text: "Welcome" }]);
+});
+
+afterEach(() => {
+  sinon.restore();
+  nock.cleanAll();
+  jest.clearAllMocks();
 });
 
 test("When the instructions are valid, then get back a successful response", async () => {
@@ -77,7 +84,7 @@ test("When video instructions are valid, then a success email should be sent to 
     destination: "Mexico",
   });
   const spiedMailSender = { send: sinon.stub().resolves(true) }; //anonymous function 👈
-  const tripClipServiceUnderTest = new TripClipService(videoProducer, WeatherProvider, spiedMailSender);
+  const tripClipServiceUnderTest = new TripClipService(spiedMailSender);
 
   // Act
   await tripClipServiceUnderTest.generateClip(clipInstructions);
@@ -200,6 +207,29 @@ test("When valid instructions are provided, then the data access is called in th
 
   // Assert
   dataAccessMock.verify();
+});
+
+// ✅🚀 TASK: Ensure that when the subtitle object that is returned by 'subtitles-provider' is null, an exception is thrown
+// 💡 TIP: 'subtitles-provider' exports a function, not object, Sinon might not be helpful here. Consider using Proxyquire or Jest mock
+// 💡 TIP: If using Jest mock for the mission, at start *before* importing the subtitles provider, mock this module:
+//  jest.mock("../subtitles-provider");
+//  Then within the test, set the desired response: subtitlesProvider.mockReturnValue({your desired value});
+test("When subtitles are empty, then the response succeed is false", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({
+    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+  });
+  const tripClipServiceUnderTest = new TripClipService();
+  process.env.MANDATORY_SUBTITLES = "true";
+  subtitlesProvider.mockReturnValue(null);
+
+  // Act
+  const generateClipMethodWrapper = async () => {
+    await tripClipServiceUnderTest.generateClip(clipInstructions);
+  };
+
+  // Assert
+  await expect(generateClipMethodWrapper).rejects.toThrow();
 });
 
 // ✅ TASK: Ensure that all calls to YouTube REST service are not taking place and instead a default value is returned for all tests

@@ -7,5 +7,5 @@ module.exports.sendSMS = async (message, number) => {
 };
 
 module.exports.verify = async (number) => {
-  console.log(`‼️ ☎️ 📱 Real SMS sender which incur costs`);
+  console.log(`‼️ ☎️ 📱 Real SMS verify which incur costs`);
 };

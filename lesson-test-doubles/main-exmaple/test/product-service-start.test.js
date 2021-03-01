@@ -72,7 +72,7 @@ test("When a product is added, then SMS is saved part II", async () => {
 test("When adding a product on 1st day of a month, an error is thrown back", async () => {
   // Arrange
   const productServiceUnderTest = new ProductsService();
-  const firstDayOfMonth = new Date().setDate(1);
+  const firstDayOfMonth = new Date().setDate(2);
   sinon.useFakeTimers(firstDayOfMonth);
 
   // Act

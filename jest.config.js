@@ -11,7 +11,7 @@ module.exports = {
   collectCoverageFrom: ["**/src/*.js", "!**/node_modules/**", "!**/test/**"],
   forceExit: true,
   testEnvironment: "node",
-  notify: false,
+  notify: true,
   notifyMode: "change",
   watchPlugins: [
     "jest-watch-typeahead/filename",

@@ -1,5 +1,6 @@
 // 🏅 Your mission is to validate and sharpen your test doubles skills 💜
 // ✅ Whenever you see this icon, there's a TASK for you
+// ✅🚀 - This is an Advanced task
 // 💡 - This is an ADVICE symbol, it will appear nearby most tasks and help you in fulfilling the tasks
 
 const sinon = require("sinon");
@@ -19,7 +20,7 @@ const DataAccess = require("../data-access");
 test("When the instructions are valid, then get back a successful response", async () => {
   // Arrange
   const clipInstructions = testHelper.factorClipInstructions({
-    creator: { name: "Yoni" },
+    creator: { name: "Kavita" },
     destination: "Mexico",
   });
   const tripClipServiceUnderTest = new TripClipService();
@@ -28,12 +29,12 @@ test("When the instructions are valid, then get back a successful response", asy
   const receivedResult = await tripClipServiceUnderTest.generateClip(clipInstructions);
 
   // Assert
-  expect(receivedResult.succeed).toBe(true);
+  //  💡 TIP: Ensure that the result 'succeed' property is true
 });
 
 // ✅ TASK: Test that when a clip was generated successfully, an email is sent to the creator
 // 💡 TIP: A spy or stub might be a good fit for this mission. What are the advantages of using stub?
-// 💡 TIP: This line creates a spy over the mailer -> const spyOnMailer = sinon.spy(mailSender, "send");
+// 💡 TIP: This line creates a spy on the the mailer object: const mailerListener = sinon.spy(mailSender, "send");
 test("When video instructions are valid, then a success email should be sent to creator", async () => {
   // Arrange
   const clipInstructions = testHelper.factorClipInstructions({
@@ -41,17 +42,16 @@ test("When video instructions are valid, then a success email should be sent to 
     destination: "Mexico",
   });
   const tripClipServiceUnderTest = new TripClipService();
-  const spyOnMailer = sinon.spy(mailSender, "send");
 
   // Act
   await tripClipServiceUnderTest.generateClip(clipInstructions);
 
   // Assert
-  expect(spyOnMailer.called).toBe(true);
+  // 💡 TIP: Ensure that the stub or spy was called. mailerListener.called should be true
 });
 
-// ✅ TASK: In the last test above, ensure that the right params were passed. Consider whether to check that exact values or the param existence and types
-// 💡 TIP: Sometimes it's recommended not to rely on specific string that might change often and break the tests
+// ✅ TASK: In the last test above, ensure that the right params were passed to the mailer. Consider whether to check that exact values or the param existence and types
+// 💡 TIP: Sometimes it's not recommended to rely on specific string that might change often and break the tests
 
 // ✅ TASK: In the last test, ensure that the the real mailer was not called because you are charged for every outgoing email
 // 💡 TIP: The mailer logs to the console, ensure that this string is not there
@@ -69,11 +69,13 @@ test("When video instructions are valid, then a success email should be sent to 
 // ✅ TASK: Test that when the VideoProducer.produce operation operation fails, an exception is thrown
 // with a property name: 'video-production-failed'
 // 💡 TIP: Use a test double that can change the response of this function and trigger it to throw an error
+// 💡 TIP: This is grey box testing, we mess with the internals but with motivation to test the OUTCOME of the box
 
 // ✅ TASK: Test that when the InstructionsValidator class tells that the input is invalid, then the response is not succeeded
-// 💡 TIP: We can achieve this by stubbing this class response, but do we need a test double for that? Whenever possible avoid test doubles
+// 💡 TIP: We can achieve this by stubbing this class response, but do we need a test double for that?
+// 💡 TIP: Whenever possible avoid test doubles
 
-// ✅ TASK: Test that when the WeatherProvider returns null, then the result success field is false. There is one challenge
+// ✅🚀 TASK: Test that when the WeatherProvider returns null, then the result success field is false. There is one challenge
 // to address - This file exports a class, not an instance. To stub it you need to tell Sinon how
 // 💡 TIP: Use the following syntax:
 // sinon.stub(object.prototype , "method-name")
@@ -82,6 +84,24 @@ test("When video instructions are valid, then a success email should be sent to 
 // After the test pass, refactor a single param in the data access class and note how the tests fails also everything still works
 // 💡 TIP: Use Sinon mock fluent interface to define as many expectations as possible in a single line
 
+// ✅🚀 TASK: Ensure that when the subtitle object that is returned by 'subtitles-provider' is null, an exception is thrown
+// 💡 TIP: 'subtitles-provider' exports a function, not object, Sinon might not be helpful here. Consider using Proxyquire or Jest mock
+// 💡 TIP: If using Jest mock for the mission, at start *before* importing the subtitles provider, mock this module:
+//  jest.mock("../subtitles-provider");
+//  Then within the test, set the desired response: subtitlesProvider.mockReturnValue({your desired value});
+test("When subtitles are empty, then the response succeed is false", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({
+    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+  });
+  const tripClipServiceUnderTest = new TripClipService();
+  process.env.MANDATORY_SUBTITLES = "true";
+
+  // Act
+
+  // Assert
+});
+
 // ✅ TASK: Ensure that all calls to YouTube REST service are not taking place and instead a default value is returned for all tests
 // 💡 TIP: Use interceptor and apply it globally for all tests in the file
 
@@ -89,5 +109,16 @@ test("When video instructions are valid, then a success email should be sent to 
 // 💡 TIP: This level of interception should happen in a specific test
 // 💡 TIP: Since the request to YouTube has a dynamic string, specify the path using a RegEx -> .post('/upload.*$/')
 
-// ✅ TASK: By default, prevent all calls to external HTTP services so your tests won't get affected by 3rd party services
+// ✅🚀 TASK: By default, prevent all calls to external HTTP services so your tests won't get affected by 3rd party services
 // 💡 TIP: The lib has a function that supports this
+
+beforeEach(() => {
+  // 💡 TIP: Leave this code, it's required to prevent access to the real YouTube
+  nock("http://like-youtube.com")
+    .post(/upload.*$/)
+    .reply(200, { status: "all-good" });
+});
+
+afterEach(() => {
+  nock.cleanAll();
+});

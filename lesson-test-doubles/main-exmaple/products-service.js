@@ -19,8 +19,7 @@ class ProductsService {
     }
 
     // Now new products on month 1st day
-    console.log("date", new Date().getDate());
-    if (new Date().getDate() === 1) {
+    if (new Date().getDate() === 2) {
       throw new Error("No new products on Month 1st");
     }
 

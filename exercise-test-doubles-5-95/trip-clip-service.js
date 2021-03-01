@@ -4,20 +4,27 @@ const defaultVideoProducer = require("./video-producer");
 const instructionsValidator = require("./instructions-validator");
 const dataAccess = require("./data-access");
 const { default: Axios } = require("axios");
+const subtitlesProvider = require("./subtitles-provider");
 
 function TripClipService(
+  mailSender = defaultMailSender,
   videoProducer = defaultVideoProducer,
-  WeatherProvider = DefaultWeatherProvider,
-  mailSender = defaultMailSender
+  WeatherProvider = DefaultWeatherProvider
 ) {
   this.videoProducer = videoProducer;
   this.weatherProvider = new WeatherProvider();
   this.mailSender = mailSender;
 
-  this.generateVideoScript = function (instructions, forecastedWeather) {
+  this.generateVideoScript = function (instructions, forecastedWeather, subtitles) {
+    let succeeded;
+    if (process.env.MANDATORY_SUBTITLES === "true" && !subtitles) {
+      throw new Error("Subtitles are mandatory but empty");
+    } else {
+      succeeded = true;
+    }
     return {
       script: "something",
-      succeeded: true,
+      succeeded,
     }; //pseudo result
   };
 
@@ -54,24 +61,25 @@ function TripClipService(
       }
 
       // Generate video, send email and save in DB
-      const videoScript = this.generateVideoScript(instructions, forecastedWeather);
+      const subtitles = subtitlesProvider(instructions);
+      const videoScript = this.generateVideoScript(instructions, forecastedWeather, subtitles);
       const videoURL = await this.videoProducer.produce(videoScript);
       await this.mailSender.send(instructions.creator.email, "Your video is ready");
       new dataAccess().save(instructions, true, videoURL);
 
       //Upload to YouTube, uncomment this lines when ready to test this
       Axios.defaults.validateStatus = () => true;
-      // const YouTubeResponse = await Axios.post(`http://like-youtube.com/upload/${videoURL}`);
-      // if (YouTubeResponse.status !== 200) {
-      //   result.succeed = false;
-      //   return result;
-      // }
+      const YouTubeResponse = await Axios.post(`http://like-youtube.com/upload?url=${videoURL}`);
+      if (YouTubeResponse.status !== 200) {
+        result.succeed = false;
+        return result;
+      }
       result.succeed = true;
 
       return result;
     } catch (err) {
       // Throw descriptive error
-      console.log(err);
+      console.log("Error", err);
       const errorToThrow = new Error(`video production failed ${err}`);
       errorToThrow.name = "video-production-failed";
       throw errorToThrow;
