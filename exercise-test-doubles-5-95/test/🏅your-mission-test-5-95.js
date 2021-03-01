@@ -135,7 +135,6 @@ it("Ensure that when the subtitle object that is returned by 'subtitles-provider
     await tripClipServiceUnderTest.generateClip(clipInstructions);
   } catch (error) {
     // Assert
-    console.log('FFFFF ----  ', error.message)
     expect(error.message).toBeDefined();
   }
 })
@@ -148,7 +147,7 @@ it("Ensure that when the subtitle object that is returned by 'subtitles-provider
 
 
 
-it(" Ensure that all calls to YouTube REST service are not taking place and instead a default value", async () => {
+it("Ensure that all calls to YouTube REST service are not taking place and instead a default value", async () => {
   // Arrange
   const clipInstructions = testHelper.factorClipInstructions({
     creator: { email: "yoni@testjavascript.com", name: "Yoni" },
