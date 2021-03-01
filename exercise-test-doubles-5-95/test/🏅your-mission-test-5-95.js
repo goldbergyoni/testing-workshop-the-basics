@@ -12,6 +12,7 @@ const mailSender = require("../mail-sender");
 const videoProducer = require("../video-producer");
 const testHelper = require("./test-helpers");
 const DataAccess = require("../data-access");
+const { assert } = require("console");
 
 // ✅ TASK: Write a simple test against the trip clip service "generateClip" method- When valid input, then get back a valid response
 //Ensure the the test pass
@@ -30,6 +31,8 @@ test("When the instructions are valid, then get back a successful response", asy
 
   // Assert
   //  💡 TIP: Ensure that the result 'succeed' property is true
+  assert(receivedResult.succeed);
+
 });
 
 // ✅ TASK: Test that when a clip was generated successfully, an email is sent to the creator
@@ -42,12 +45,27 @@ test("When video instructions are valid, then a success email should be sent to 
     destination: "Mexico",
   });
   const tripClipServiceUnderTest = new TripClipService();
+  const mailerListener = sinon.stub(mailSender, "send");
 
   // Act
   await tripClipServiceUnderTest.generateClip(clipInstructions);
 
   // Assert
   // 💡 TIP: Ensure that the stub or spy was called. mailerListener.called should be true
+  expect(mailerListener.called).toBe(true);
+  expect(mailerListener.lastCall.args).toEqual(["yoni@testjavascript.com", expect.any(String)]);
+  console.log = jest.fn();
+  expect(console.log).not.toHaveBeenCalled()
+
+ 
+  // Anonymous 
+  var doneFunction = function (error, args) {
+    // do something
+  };
+  var callback = sinon.spy(doneFunction);
+  assert(callback.calledWith("yoni@testjavascript.com"));
+
+
 });
 
 // ✅ TASK: In the last test above, ensure that the right params were passed to the mailer. Consider whether to check that exact values or the param existence and types
@@ -70,6 +88,22 @@ test("When video instructions are valid, then a success email should be sent to 
 // with a property name: 'video-production-failed'
 // 💡 TIP: Use a test double that can change the response of this function and trigger it to throw an error
 // 💡 TIP: This is grey box testing, we mess with the internals but with motivation to test the OUTCOME of the box
+
+
+test(" when the VideoProducer.produce operation operation fails, an exception is thrown", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({
+    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+    destination: "Mexico",
+  });
+  const tripClipServiceUnderTest = new TripClipService();
+  sinon.stub(videoProducer, "produce").rejects("Mock exception");
+  // Act
+  const response = tripClipServiceUnderTest.generateClip(clipInstructions);
+  // Assert
+  // 💡 TIP: Ensure that the stub or spy was called. mailerListener.called should be true
+  await expect(response).rejects.toThrowError("video production failed Mock exception");
+});
 
 // ✅ TASK: Test that when the InstructionsValidator class tells that the input is invalid, then the response is not succeeded
 // 💡 TIP: We can achieve this by stubbing this class response, but do we need a test double for that?
@@ -112,6 +146,13 @@ test("When subtitles are empty, then the response succeed is false", async () =>
 // ✅🚀 TASK: By default, prevent all calls to external HTTP services so your tests won't get affected by 3rd party services
 // 💡 TIP: The lib has a function that supports this
 
+// mocking externals third parties
+jest.mock('os', () => { 
+  const os = jest.requireActual('os');
+  jest.spyOn(os, 'platform').mockReturnValue('mocked response');
+  return os;
+});
+
 beforeEach(() => {
   // 💡 TIP: Leave this code, it's required to prevent access to the real YouTube
   nock("http://like-youtube.com")
@@ -120,5 +161,6 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  sinon.restore();
   nock.cleanAll();
 });
