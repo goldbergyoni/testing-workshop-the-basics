@@ -17,6 +17,11 @@ const DataAccess = require("../data-access");
 //Ensure the the test pass
 // 💡 TIP: Here's the test skeleton
 
+afterEach(() => {
+  nock.cleanAll();  
+  sinon.restore();  
+});
+
 test("When the instructions are valid, then get back a successful response", async () => {
   // Arrange
   const clipInstructions = testHelper.factorClipInstructions({
@@ -30,6 +35,7 @@ test("When the instructions are valid, then get back a successful response", asy
 
   // Assert
   //  💡 TIP: Ensure that the result 'succeed' property is true
+  expect(receivedResult.succeed).toBe(true);
 });
 
 // ✅ TASK: Test that when a clip was generated successfully, an email is sent to the creator
@@ -42,26 +48,76 @@ test("When video instructions are valid, then a success email should be sent to 
     destination: "Mexico",
   });
   const tripClipServiceUnderTest = new TripClipService();
-
+  const spyOnMailer = sinon.stub(mailSender, "send");
   // Act
   await tripClipServiceUnderTest.generateClip(clipInstructions);
 
   // Assert
   // 💡 TIP: Ensure that the stub or spy was called. mailerListener.called should be true
+  expect(spyOnMailer.called).toEqual(true);
 });
 
 // ✅ TASK: In the last test above, ensure that the right params were passed to the mailer. Consider whether to check that exact values or the param existence and types
 // 💡 TIP: Sometimes it's not recommended to rely on specific string that might change often and break the tests
+test("When video instructions are valid, then the correct params were passed to the mailer", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({
+    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+    destination: "Mexico",
+  });
+  const tripClipServiceUnderTest = new TripClipService();
+  const spyOnMailer = sinon.stub(mailSender, "send");
+  // Act
+  await tripClipServiceUnderTest.generateClip(clipInstructions);
+
+  // Assert
+  // 💡 TIP: Ensure that the stub or spy was called. mailerListener.called should be true
+  expect(spyOnMailer.withArgs("yoni@testjavascript.com", "Your video is ready").called).toEqual(true);
+});
+
 
 // ✅ TASK: In the last test, ensure that the the real mailer was not called because you are charged for every outgoing email
 // 💡 TIP: The mailer logs to the console, ensure that this string is not there
 // 💡 TIP: If the real mailer is called, consider switching to stub
+test("When video instructions are valid, the to ensure that the the real mailer was not called because you are charged for every outgoing email", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({
+    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+    destination: "Mexico",
+  });  
+  const spyOnConsole = sinon.spy(console, "log");
+  const spyOnMailer = sinon.stub(mailSender, "send");  
+  const tripClipServiceUnderTest = new TripClipService();    
+  // Act
+  await tripClipServiceUnderTest.generateClip(clipInstructions);
+
+  // Assert
+  // 💡 TIP: Ensure that the stub or spy was called. mailerListener.called should be true
+  expect(spyOnConsole.withArgs("Im the real mailer").called).toEqual(false);
+});
 
 // ✅ TASK: In relation to the test above, achieve the same result with 'anonymous spy' (or anonymous stub) - Pass the anonymous test double to the constructor of the SUT
 // 💡 TIP: Here's an anonymous spy syntax:
 // 💡 sinon.spy() // no args passed
 // 💡 Tip: There's no need to use the real email provider, we can just pass an empty function (anonymous spy/stub) and check whether it was called appropriately
 // The constructor of the TripClipService welcomes custom email providers
+test("When video instructions are valid, then a success email should be sent to creator (with anonymous spy)", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({
+    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+    destination: "Mexico",
+  });
+  
+  const spy = sinon.spy();
+  const tripClipServiceUnderTest = new TripClipService({send: spy});
+
+  // Act
+  await tripClipServiceUnderTest.generateClip(clipInstructions);
+
+  // Assert
+  expect(spy.called).toBe(true);
+});
+
 
 // ✅ TASK: The next two tests below step on each other toe - The 1st one stubs a function, never cleans up and the 2nd fails because of this. Fix it please
 // 💡 TIP: It seems like a good idea to clean-up after the tests
