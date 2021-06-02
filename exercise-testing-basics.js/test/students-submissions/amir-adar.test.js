@@ -35,10 +35,11 @@ describe("First test", () => {
 // 💡 TIP: Here's a valid user object to pass. Remove the property name from this object.
 
 describe("Validate user test", () => {
-  test("Test the validation user without name", () => {
+  test("When adding a new user without a name, then get back false response with explanation", () => {
 
     /// Arrange
     const userExampleWithNoName = {
+      name: undefined,
       familyName: "Beck",
       zipCode: "32486-01",
       address: "Moonlight road 181, Alaska",
@@ -50,7 +51,11 @@ describe("Validate user test", () => {
 
     /// Assert
     expect(receivedResult.succeeded).toBe(false);
-    expect(receivedResult.reasons.length).toBe(1);
+    expect(receivedResult.reasons).toIncludeSameMembers(['no-name']);
+    // expect(receivedResult.succeeded).toIncludeSameMembers(false);
+
+    expect(receivedResult).toMatchObject({succeeded:false, reasons: ['no-name']});
+
   });
 
   // ✅ TASK: Use the AAA pattern in the test you just coded above ☝🏻

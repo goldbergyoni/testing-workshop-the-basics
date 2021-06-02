@@ -2,6 +2,7 @@
 const axios = require("axios");
 const { initializeAPI } = require("../../sensors-api");
 const nock = require("nock");
+const { axiosStatusCodeConfig, generateEventForTesting }  = require("../test-helper");
 
 let App;
 let port;
@@ -21,12 +22,10 @@ afterAll((done) => {
 });
 
 beforeEach(() => {
-    nock("http://localhost").get("/notification").reply(200, {
-      success: true,
-    });
+   
   });
   
-  function helper(length) {
+  function generateUniqueCategoryOnSize(length) {
     var randomChars =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     var result = "";
@@ -37,6 +36,9 @@ beforeEach(() => {
     }
     return result;
   }
+  //helper function can be replace to: Math.random()*1000
+
+
   describe("Sensors test", () => {
     // ✅ TASK: Test that when a new event is posted to /event route, if category or temperature are not specified -> the API returns HTTP 400
     // 💡 TIP: Down below, there is an example event schema
@@ -50,7 +52,7 @@ beforeEach(() => {
     // ✅ TASK: Test that when a new valid event is posted to /sensor-events route, we get back a valid response
     // 💡 TIP: Consider both the HTTP status and the body
   
-    test("When new valid event is send,  should get back ", async () => {
+    test("When new valid event is send,  should get back a valid response", async () => {
       //Arrange
       const eventToAdd = {
         category: "kids-room",
@@ -62,43 +64,42 @@ beforeEach(() => {
       };
       //Act
   
-      const config = {
-        validateStatus: () => true,
-      };
       const url = `http://localhost:${port}/sensor-events`;
-      const res = await axios.post(url, eventToAdd, config);
+      const res = await axios.post(url, eventToAdd, axiosStatusCodeConfig());
   
       //Assert
       expect(res.status).toBe(200);
+      expect(res.data).not.toEqual([]) // check the body (if the data array )
+      expect(res).toMatchObject({status: 200})
     });
   
     // ✅ TASK: Test that when a new valid event is posted to /sensor-events route, it's indeed retrievable from the DB
     // 💡 TIP: Whenever possible, use the public API for verification
   
-    test("When new valid event is send,  should retrievable the data from the DB (2 objects)", async () => {
+    test("When new valid event is send,  should retrievable the data from the DB ", async () => {
       //Arrange
       const eventToAdd = {
-        category: "kids-room",
+        category: "bath-room",
         temperature: 20,
         name: "Thermostat-temperature-new", //This must be unique
         color: "Green",
         weight: "80 gram",
         status: "active",
       };
-      //Act
-  
-      const config = {
-        validateStatus: () => true,
-      };
+
       const urlFetchSensorEvent = `http://localhost:${port}/sensor-events`;
       const urlGetEventByCategory = `http://localhost:${port}/sensor-events/${eventToAdd.category}/${eventToAdd.name}`;
   
-      await axios.post(urlFetchSensorEvent, eventToAdd, config);
+      //Act
+  
+
+      
+      await axios.post(urlFetchSensorEvent, eventToAdd, axiosStatusCodeConfig());
       const eventFromDb = await axios.get(urlGetEventByCategory);
       // console.log("retrive data ", eventFromDb);
       //Assert
       expect(eventFromDb.status).toBe(200);
-      expect(eventFromDb.data.length).toBe(2); // One obj from the last test and one is from the current test.
+      expect(eventFromDb.data.length).toBe(1); // One obj from the last test and one is from the current test.
     });
   
     // ✅ TASK: Test that querying the GET:/sensor-events route, it returns the right event when a single event exist
@@ -111,7 +112,7 @@ beforeEach(() => {
       //Act
   
       const eventToAdd = {
-        category: `${helper(5)}`,
+        category: `${generateUniqueCategoryOnSize(5)}`,
         temperature: 20,
         name: "Thermostat-temperature-new", //This must be unique
         color: "Green",
@@ -119,19 +120,16 @@ beforeEach(() => {
         status: "active",
       };
   
-      console.log(eventToAdd);
-      const config = {
-        validateStatus: () => true,
-      };
       const urlFetchSensorEvent = `http://localhost:${port}/sensor-events`;
       const urlGetEventByCategory = `http://localhost:${port}/sensor-events/${eventToAdd.category}/${eventToAdd.name}`;
   
-      await axios.post(urlFetchSensorEvent, eventToAdd, config);
+      await axios.post(urlFetchSensorEvent, eventToAdd, axiosStatusCodeConfig());
       const eventFromDb = await axios.get(urlGetEventByCategory);
-      console.log("retrive data ", eventFromDb.data.length);
+      console.log("retrive data ", eventFromDb.data[0].category);
+      
       //Assert
       expect(eventFromDb.status).toBe(200);
-      expect(eventFromDb.data.length).toBe(1); // One obj from the last test and one is from the current test.
+      expect(eventFromDb.data[0].category).toEqual(eventToAdd.category); //the only event that match is the event with the unique category.
     });
   
     // ✅ TASK: Test that querying the GET:/sensor-events route, it returns the right events when multiple events exist
@@ -140,38 +138,17 @@ beforeEach(() => {
     test("When new valid event is send, should retrievable the data from the DB when muliple events exist", async () => {
       //Arrange
   
-      const category = helper(5);
-  
-      const firstEventToAdd = {
-        category: `${category}`,
-        temperature: 20,
-        name: "Thermostat-temperature", //This must be unique
-        color: "Green",
-        weight: "80 gram",
-        status: "active",
-      };
-  
-      const secondEventToAdd = {
-        category: `${category}`,
-        temperature: 25,
-        name: "Thermostat-temperature-new-one", //This must be unique
-        color: "Green",
-        weight: "80 gram",
-        status: "active",
-      };
-  
+      const category = generateUniqueCategoryOnSize(5);
+      const events = generateEventForTesting(2,category);
+      const urlGetEventByCategory = `http://localhost:${port}/sensor-events/${events[0].category}/name`;
+
       //Act
-  
-      const config = {
-        validateStatus: () => true,
-      };
-      const urlFetchSensorEvent = `http://localhost:${port}/sensor-events`;
-      const urlGetEventByCategory = `http://localhost:${port}/sensor-events/${firstEventToAdd.category}/${firstEventToAdd.name}`;
-  
-      await axios.post(urlFetchSensorEvent, firstEventToAdd, config);
-      await axios.post(urlFetchSensorEvent, secondEventToAdd, config);
-  
+    
+      await events.map((event) => {
+         axios.post(`http://localhost:${port}/sensor-events`, event, axiosStatusCodeConfig())
+      })
       const eventFromDb = await axios.get(urlGetEventByCategory);
+
       //Assert
       expect(eventFromDb.status).toBe(200);
       expect(eventFromDb.data.length).toBe(2);
@@ -182,55 +159,21 @@ beforeEach(() => {
   
     test("When new 3 valid events is send, should return the events while them sort by name", async () => {
       //Arrange
-      const category = helper(5);
-  
-      const firstEventToAdd = {
-        category: `${category}`,
-        temperature: 20,
-        name: "aaa", //This must be unique
-        color: "Green",
-        weight: "80 gram",
-        status: "active",
-      };
-  
-      const secondEventToAdd = {
-        category: `${category}`,
-        temperature: 25,
-        name: "bbb", //This must be unique
-        color: "Green",
-        weight: "80 gram",
-        status: "active",
-      };
-  
-      const thirdEventToAdd = {
-        category: `${category}`,
-        temperature: 25,
-        name: "ccc", //This must be unique
-        color: "Green",
-        weight: "80 gram",
-        status: "active",
-      };
-  
+      const category = generateUniqueCategoryOnSize(5);
+      const events = generateEventForTesting(3,category);
+
       //Act
+
+      await events.map((event) => {
+         axios.post(`http://localhost:${port}/sensor-events`, event, axiosStatusCodeConfig())
+      })
   
-      const config = {
-        validateStatus: () => true,
-      };
-      const urlFetchSensorEvent = `http://localhost:${port}/sensor-events`;
-      const urlGetEventByCategory = `http://localhost:${port}/sensor-events/${firstEventToAdd.category}/${firstEventToAdd.name}`;
-  
-      await axios.post(urlFetchSensorEvent, thirdEventToAdd, config); //ccc
-      await axios.post(urlFetchSensorEvent, firstEventToAdd, config); //aaa
-      await axios.post(urlFetchSensorEvent, secondEventToAdd, config); //bbb
-  
-      const eventFromDb = await axios.get(urlGetEventByCategory);
+      const eventsFromDb = await axios.get(`http://localhost:${port}/sensor-events/${events[0].category}/name`);
       //Assert
-      console.log("the return events: ", eventFromDb.data);
-      expect(eventFromDb.status).toBe(200);
-      expect(eventFromDb.data.length).toBe(3);
-      expect(eventFromDb.data[0].name).toBe("aaa");
-      expect(eventFromDb.data[1].name).not.toBe("ccc"); // bbb
-      expect(eventFromDb.data[2].name).toBe("ccc");
+      console.log("the return events: ", eventsFromDb.data);
+      expect(eventsFromDb.status).toBe(200);
+      expect(parseInt(eventsFromDb.data[0].name)).toBeLessThan(parseInt(eventsFromDb.data[1].name));
+      expect(parseInt(eventsFromDb.data[1].name)).toBeLessThan(parseInt(eventsFromDb.data[2].name));
     });
   
     // ✅ Learning TASK: Test that when a new valid event is posted to /sensor-events route, if the temperature exceeds 50 degree a notification is being sent
@@ -239,7 +182,6 @@ beforeEach(() => {
     test("When new valid event is send with 60 deg temperature, so it should call the nock function witch action the nock and will return the notification", async () => {
       //Arrange
   
-      //Act
   
       const eventToAdd = {
         category: "kids-room",
@@ -249,21 +191,24 @@ beforeEach(() => {
         weight: "80 gram",
         status: "active",
       };
-  
-      console.log(eventToAdd);
-      const config = {
-        validateStatus: () => true,
-      };
+
       const urlFetchSensorEvent = `http://localhost:${port}/sensor-events`;
-  
+      //Act
+
+      const nocked = nock("http://localhost").get("/notification").reply(200, {
+        success: true,
+      });
+
       const notification = await axios.post(
         urlFetchSensorEvent,
         eventToAdd,
-        config
+        axiosStatusCodeConfig()
       );
+
       //Assert
       expect(notification.status).toBe(200);
       expect(notification.data.success).toBe(true);
+      expect(nocked.isDone()).toBe(true);
     });
   
   });

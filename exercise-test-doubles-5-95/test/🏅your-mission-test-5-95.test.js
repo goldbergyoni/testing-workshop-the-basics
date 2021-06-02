@@ -12,6 +12,12 @@ const mailSender = require("../mail-sender");
 const videoProducer = require("../video-producer");
 const testHelper = require("./test-helpers");
 const DataAccess = require("../data-access");
+const { expectation } = require("sinon");
+
+
+beforeEach(() => {
+  sinon.restore();
+})
 
 // ✅ TASK: Write a simple test against the trip clip service "generateClip" method- When valid input, then get back a valid response
 //Ensure the the test pass
@@ -30,6 +36,7 @@ test("When the instructions are valid, then get back a successful response", asy
 
   // Assert
   //  💡 TIP: Ensure that the result 'succeed' property is true
+  expect(receivedResult.succeed).toBe(true);
 });
 
 // ✅ TASK: Test that when a clip was generated successfully, an email is sent to the creator
@@ -42,20 +49,44 @@ test("When video instructions are valid, then a success email should be sent to 
     destination: "Mexico",
   });
   const tripClipServiceUnderTest = new TripClipService();
+  const spyOnMailer = sinon.spy(mailSender,"send");
 
   // Act
   await tripClipServiceUnderTest.generateClip(clipInstructions);
-
   // Assert
   // 💡 TIP: Ensure that the stub or spy was called. mailerListener.called should be true
+  expect(spyOnMailer.called).toBe(true);
+
 });
 
 // ✅ TASK: In the last test above, ensure that the right params were passed to the mailer. Consider whether to check that exact values or the param existence and types
 // 💡 TIP: Sometimes it's not recommended to rely on specific string that might change often and break the tests
 
+test("When video instructions are valid, check the arguments to the send method", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({
+    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+    destination: "Mexico",
+  });
+  const tripClipServiceUnderTest = new TripClipService();
+  const spyOnMailer = sinon.spy(mailSender,"send");
+
+  // Act
+  await tripClipServiceUnderTest.generateClip(clipInstructions);
+  // Assert
+  // 💡 TIP: Ensure that the stub or spy was called. mailerListener.called should be true
+
+  expect(spyOnMailer.getCall(0).args).toEqual(['yoni@testjavascript.com','Your video is ready']);
+
+});
+
+
+
 // ✅ TASK: In the last test, ensure that the the real mailer was not called because you are charged for every outgoing email
 // 💡 TIP: The mailer logs to the console, ensure that this string is not there
 // 💡 TIP: If the real mailer is called, consider switching to stub
+
+
 
 // ✅ TASK: In relation to the test above, achieve the same result with 'anonymous spy' (or anonymous stub) - Pass the anonymous test double to the constructor of the SUT
 // 💡 TIP: Here's an anonymous spy syntax:

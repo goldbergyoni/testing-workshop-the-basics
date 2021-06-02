@@ -2,6 +2,7 @@
 const axios = require("axios");
 const { initializeAPI } = require("../../sensors-api");
 const nock = require("nock");
+const {axiosStatusCodeConfig} = require("../test-helper");
 
 let App;
 let port;
@@ -43,11 +44,9 @@ beforeEach(() => {
       //Act
   
       //The config is for response of status code ! 200-299
-      const config = {
-        validateStatus: () => true,
-      };
+
       const url = `http://localhost:${port}/sensor-events`;
-      const res = await axios.post(url, eventToAdd, config);
+      const res = await axios.post(url, eventToAdd, axiosStatusCodeConfig());
       // const response = await request(expressApp).post('/sensor-events').send(eventToAdd)
   
       // 💡 TIP: use any http client lib like Axios OR supertest
@@ -64,22 +63,23 @@ beforeEach(() => {
     test("When temperature is not specified, should get http 400 error", async () => {
       //Arrange
       const eventToAdd = {
-        category: "kids-room",
+        category: `kids-room-${Math.random()*1000}`,
         name: "Thermostat-temperature", //This must be unique
         color: "Green",
         weight: "80 gram",
         status: "active",
       };
+
+      const url = `http://localhost:${port}/sensor-events`;
+      const urlGetEventByCategory = `http://localhost:${port}/sensor-events/${eventToAdd.category}/${eventToAdd.name}`;
+
       //Act
   
-      const config = {
-        validateStatus: () => true,
-      };
-      const url = `http://localhost:${port}/sensor-events`;
-      const res = await axios.post(url, eventToAdd, config);
-  
+      const res = await axios.post(url, eventToAdd, axiosStatusCodeConfig());
+      const isInserted = await axios.get(urlGetEventByCategory);
       //Assert
       expect(res.status).toBe(400);
+      expect(isInserted.data).toEqual([]);
     });
   
     // ✅ TASK: Test that when a new valid event is posted to /sensor-events route, we get back a valid response

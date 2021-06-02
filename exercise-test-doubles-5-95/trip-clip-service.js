@@ -69,11 +69,11 @@ function TripClipService(
 
       //Upload to YouTube, uncomment this lines when ready to test this
       Axios.defaults.validateStatus = () => true;
-      const YouTubeResponse = await Axios.post(`http://like-youtube.com/upload?url=${videoURL}`);
-      if (YouTubeResponse.status !== 200) {
-        result.succeed = false;
-        return result;
-      }
+      // const YouTubeResponse = await Axios.post(`http://like-youtube.com/upload?url=${videoURL}`);
+      // if (YouTubeResponse.status !== 200) {
+      //   result.succeed = false;
+      //   return result;
+      // }
       result.succeed = true;
 
       return result;
