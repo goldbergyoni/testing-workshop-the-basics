@@ -17,11 +17,9 @@ module.exports = class sensorsDAL {
   async getEvents(category, sortBy = "name") {
     return new Promise((resolve, reject) => {
       setImmediate(() => {
-        console.log(category);
         const filteredEvents = events
           .filter((event) => event.category === category)
           .sort((a, b) => a.name.localeCompare(b.name));
-
         resolve(filteredEvents);
       });
     });

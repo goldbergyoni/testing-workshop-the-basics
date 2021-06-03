@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --detectOpenHandles",
-    "test:dev": "jest --watch --verbose --silent",
+    "test:dev": "jest --watch --verbose --maxWorkers=0",
     "test:dev:verbose": "jest --watch --verbose",
     "test:withDocker": "docker run -n myMongo -d mongo -storageEngine inMemory && npm t"
   },
@@ -21,7 +21,7 @@
     "@types/supertest": "^2.0.10",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
-    "express": "^4.17.1",
+
     "nock": "^13.0.4",
     "nodemon": "^2.0.6",
     "round-to": "^5.0.0",
