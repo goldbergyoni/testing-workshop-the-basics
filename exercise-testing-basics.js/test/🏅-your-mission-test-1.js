@@ -3,8 +3,8 @@
 // 💡 - This is an ADVICE symbol, it will appear nearby most tasks and help you in fulfilling the tasks
 
 const testHelper = require('./test-helpers')
-const usersService = require('../users-service')
 const jestExtended = require('jest-extended')
+const {ValidError,UserService} = require("../users-service");
 
 
 // ✅ TASK: Run this file tests, you should see at least see this simple test below 👇 pass
@@ -15,9 +15,11 @@ const jestExtended = require('jest-extended')
 // 💡Another option - If you prefer not to run tests in Watch mode, just type 'npm test -- mission'
 
 
-test('👶🏽 This is a playground test 🚂', () => {
-    expect(true).toBe(true);
-});
+describe('user service test',()=>{
+    test('👶🏽 This is a playground test 🚂', () => {
+        expect(true).toBe(true);
+    });
+})
 
 // ✅ TASK: Wrap this simple test above with a 'describe' statement
 // 💡 TIP: Start typing 'describe' and your IDE should suggest auto-completion
@@ -27,6 +29,9 @@ test('👶🏽 This is a playground test 🚂', () => {
 // 💡 TIP: At minimum your assertion might look like: expect(true).toBe(true)
 // 💡 Try multiple assertions type to get familiar with the expect API
 
+it('should test', function () {
+    expect({a:'rawi',b:'no'}).toMatchObject({a:'rawi'})
+});
 
 
 // ✅ TASK: Test the 'validateUser' method of the 'usersService': Ensure that when no 'name' property is provided, 
@@ -34,14 +39,80 @@ test('👶🏽 This is a playground test 🚂', () => {
 // 💡 TIP: Here's a valid user object to pass. Remove the property name from this object.
 
 
-const userExample = {
-    name: 'Kent',
-    familyName: 'Beck',
-    zipCode: '32486-01',
-    address: 'Moonlight road 181, Alaska'
-};
+describe('validate user test',()=>{
+
+    let user;
+    let userServiceUnderTest;
+    beforeEach(()=>{
+         user = {
+            name:'rawi',
+            familyName: 'Beck',
+            zipCode: '32486-01',
+            address: 'Moonlight road 181, Alaska'
+        };
+        userServiceUnderTest=new UserService();
+    })
+
+    it('should fail when there is no name', function () {
+        // ARRANGE
+        const userWithNoName={...user,name:undefined};
+
+        // ACT
+        const res=userServiceUnderTest.validateUser(userWithNoName)
+
+        //ASSERT
+        expect(res.succeeded).toBe(false)
+    });
+    it('should pass if all fields are valid', function () {
+        // ARRAGE
+
+        // ACT
+        const res=userServiceUnderTest.validateUser(user)
+
+        //ASSERT
+        expect(res.succeeded).toBe(true)
+        expect(res.reasons).toHaveLength(0)
+    });
+    it('should fail if missing address and zipcode ', function () {
+        // ARRAGE
+        const changedUser={user,zipCode: undefined,address: undefined}
+
+        // ACT
+        const res=userServiceUnderTest.validateUser(changedUser)
+
+        //ASSERT
+        expect(res.succeeded).toBe(false)
+    });
+    it('should fail if there is not family name', function () {
+        const changedUser={user,familyName: undefined}
+
+        // ACT
+        const res=userServiceUnderTest.validateUser(changedUser)
+
+        //ASSERT
+        expect(res.succeeded).toBe(false)
+    });
+    it('should fail if there is not family name', function () {
+        const changedUser={user,familyName: undefined,zipCode:undefined,address:undefined}
+
+        // ACT
+        const res=userServiceUnderTest.validateUser(changedUser)
+
+        //ASSERT
+        expect(res.succeeded).toBe(false)
+        expect(res.reasons).toIncludeAllMembers(['no-name'],['no-location'])
+    });
+    it('should throw an error if there is no user', function () {
+
+        // ACT
+        const validateUserBinded=userServiceUnderTest.validateUser.bind(this,undefined)
+
+        //ASSERT
+        expect(validateUserBinded).toThrowError(ValidError)
+    });
 
 
+})
 
 // ✅ TASK: Use the AAA pattern in the test you just coded above ☝🏻
 // 💡 TIP: Put 3 sections within the test (appear below). In each one of them, place the appropriate parts
@@ -49,7 +120,7 @@ const userExample = {
 // Act
 // Assert
 
-// ✅ TASK: Currently this file contains 3 test, run just one of of those and ignore all the others
+// ✅ TASK: Currently this file contains 3 test, run just one of those and ignore all the others
 // 💡 TIP: There are two options to achieve this, try both:
 // ⓵ Add the word .skip to the target test. For example: test.skip("test name", () => {})
 // ⓶ Preferred way: Use jest watch tools. Run the tests with 'npm run test:dev', now type the letter 't',

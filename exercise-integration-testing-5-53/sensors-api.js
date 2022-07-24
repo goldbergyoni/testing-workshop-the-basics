@@ -3,6 +3,7 @@ const util = require("util");
 const axios = require("axios");
 const bodyParser = require("body-parser");
 const sensorsDal = require("./sensors-dal");
+let serverConnection;
 
 const initializeAPI = () => {
   const expressApp = express();
@@ -13,11 +14,10 @@ const initializeAPI = () => {
     })
   );
   expressApp.use(bodyParser.json());
-  expressApp.listen();
+  serverConnection=expressApp.listen();
 
   // add new event
   router.post("/sensor-events", async (req, res, next) => {
-    console.log(`Sensors events was called to add new event ${util.inspect(req.body)}`);
     const {
       temperature,
       category
@@ -51,6 +51,11 @@ const initializeAPI = () => {
   return expressApp;
 };
 
+const closeApi=async ()=>{
+  return serverConnection.close()
+}
+
 module.exports = {
-  initializeAPI
+  initializeAPI,
+  closeApi
 };
