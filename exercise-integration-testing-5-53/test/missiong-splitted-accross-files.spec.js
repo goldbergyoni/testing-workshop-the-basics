@@ -41,14 +41,23 @@ describe("/api",()=>{
                     status: "active",
                     category: "insert-to-db"
                 };
+                await supertest(expressApp).post("/sensor-events").send(eventToAdd);
 
                 //Act
-                await supertest(expressApp).post("/sensor-events").send(eventToAdd);
-                const getEventResponse = await supertest(expressApp).get(`/sensor-events/${eventToAdd.category}/name`);
+                const {body:getEventResponse} = await supertest(expressApp).get(`/sensor-events/${eventToAdd.category}/name`);
 
                 //Assert
-                const relevantEvent=getEventResponse.body.find(val=>val.name===eventToAdd.name)
-                expect(relevantEvent).toMatchObject(eventToAdd)
+                expect(getEventResponse).toHaveLength(1)
+                expect(getEventResponse).toMatchObject([
+                    {
+                        temperature: 50,
+                        name: 'insert-to-db-test',
+                        color: 'Green',
+                        weight: '80 gram',
+                        status: 'active',
+                        category: 'insert-to-db',
+                    }
+                ])
             })
             // ✅ TASK: Test that querying the GET:/sensor-events route, it returns the right events when multiple events exist
             // 💡 TIP: Ensure that all the relevant events were returned
@@ -78,13 +87,15 @@ describe("/api",()=>{
                     status: "active",
                     category: "distraction"
                 };
-                //Act
                 await supertest(expressApp).post("/sensor-events").send(event1ToAdd);
                 await supertest(expressApp).post("/sensor-events").send(event2ToAdd);
+                await supertest(expressApp).post("/sensor-events").send(event3ToAdd);
+                //Act
                 const getEventResponse = await supertest(expressApp).get(`/sensor-events/${event1ToAdd.category}/name`);
 
                 //Assert
                 expect(getEventResponse.body).toMatchObject([event1ToAdd,event2ToAdd])
+                expect(getEventResponse.body).toHaveLength(2)
             })
             // ✅ TASK: Test that querying for /sensor-events route and sorting by the field 'name', the results are indeed sorted
             // 💡 TIP: Each test should be independent and might run alone without others, don't count on data (events) from other tests

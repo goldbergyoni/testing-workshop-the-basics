@@ -46,6 +46,7 @@ describe('/api',()=>{
           color: "Green",
           weight: "80 gram",
           status: "active",
+          category:undefined
           // 💡 TIP: Consider explicitly specify that category is undefined
         };
 
@@ -71,10 +72,10 @@ describe('/api',()=>{
           status: "active",
           category: "sensor"
         };
+        await supertest(expressApp).post("/sensor-events").send(eventToAdd);
 
         //Act
-        await supertest(expressApp).post("/sensor-events").send(eventToAdd);
-        const pullFromDb = await supertest(expressApp).get("/sensor-events/no-temp-test/name");
+        const pullFromDb = await supertest(expressApp).get(`/sensor-events/${eventToAdd.category}/name`);
 
 
         //Assert
