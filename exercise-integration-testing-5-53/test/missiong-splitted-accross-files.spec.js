@@ -2,6 +2,7 @@
 const { initializeAPI, closeApi} = require("../sensors-api");
 const nock = require("nock");
 const supertest = require("supertest");
+const {createEvent} = require("./integrationTestHelper");
 
 let expressApp;
 
@@ -63,30 +64,11 @@ describe("/api",()=>{
             // 💡 TIP: Ensure that all the relevant events were returned
             it("querying the GET:/sensor-events route, it returns the right events when multiple events exist",async ()=>{
                 //Arrange
-                const event1ToAdd = {
-                    temperature: 50,
-                    name: "insert-to-db-test1",
-                    color: "Green",
-                    weight: "80 gram",
-                    status: "active",
-                    category: "right-event"
-                };
-                const event2ToAdd = {
-                    temperature: 50,
-                    name: "insert-to-db-test2",
-                    color: "Green",
-                    weight: "80 gram",
-                    status: "active",
-                    category: "right-event"
-                };
-                const event3ToAdd = {
-                    temperature: 50,
-                    name: "insert-to-db-test",
-                    color: "Green",
-                    weight: "80 gram",
-                    status: "active",
-                    category: "distraction"
-                };
+
+
+                const event1ToAdd = createEvent(50,'right-event');
+                const event2ToAdd = createEvent(50,'right-event');
+                const event3ToAdd = createEvent(50,'distraction');
                 await supertest(expressApp).post("/sensor-events").send(event1ToAdd);
                 await supertest(expressApp).post("/sensor-events").send(event2ToAdd);
                 await supertest(expressApp).post("/sensor-events").send(event3ToAdd);
