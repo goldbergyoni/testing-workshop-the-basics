@@ -2,15 +2,13 @@ const ProductService = require('./products-service');
 const configuration = require('./configuration');
 
 describe('Calculate Price', () => {
-    beforeAll(async (done) => {
+    beforeAll(async () => {
         console.log('🚩 beforeAll');
         await configuration.start();
-        done();
     });
-    afterAll(async (done) => {
+    afterAll(async () => {
         console.log('🚩 afterAll');
         await configuration.stop();
-        done();
     });
     beforeEach(() => {
         console.log('🚩 beforeEach');

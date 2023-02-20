@@ -8,9 +8,8 @@ const dataAccess = require("../data-access/data-access");
 
 let expressApp;
 
-beforeAll(async (done) => {
+beforeAll(async () => {
   expressApp = await initializeServer();
-  done();
 });
 
 beforeEach(() => {
@@ -19,9 +18,8 @@ beforeEach(() => {
   sinon.stub(smsSender, "sendSMS").returns(Promise.resolve(true));
 });
 
-afterAll(async (done) => {
+afterAll(async () => {
   await stopServer();
-  done();
 });
 
 describe("Integration tests", () => {

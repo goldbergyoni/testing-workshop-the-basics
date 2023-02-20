@@ -73,8 +73,8 @@ test("When video instructions are valid, then a success email should be sent to 
 // 💡 TIP: If the real mailer is called, consider switching to stub
 
 // ✅ TASK: In relation to the test above, achieve the same result with 'anonymous spy' (or anonymous stub) - Pass the anonymous test double to the constructor of the SUT
-// 💡 TIP: Here's an anonymous spy syntax:
-// 💡 sinon.spy() // no args passed
+// 💡 TIP: Here's an anonymous stub/spy syntax:
+// 💡 sinon.spy() or sinon.stub() // no args passed
 // 💡 Tip: There's no need to use the real email provider, we can just pass an empty function (anonymous spy/stub) and check whether it was called appropriately
 // The constructor of the TripClipService welcomes custom email providers
 test("When video instructions are valid, then a success email should be sent to creator (with anonymous spy)", async () => {
@@ -83,19 +83,18 @@ test("When video instructions are valid, then a success email should be sent to 
     creator: { email: "yoni@testjavascript.com", name: "Yoni" },
     destination: "Mexico",
   });
-  const spiedMailSender = { send: sinon.stub().resolves(true) }; //anonymous function 👈
-  const tripClipServiceUnderTest = new TripClipService(spiedMailSender);
+  const stubbedMailSender = { send: sinon.stub().resolves(true) }; //anonymous function 👈
+  const tripClipServiceUnderTest = new TripClipService(stubbedMailSender);
 
   // Act
   await tripClipServiceUnderTest.generateClip(clipInstructions);
 
   // Assert
-  expect(spiedMailSender.send.lastCall.args).toEqual(["yoni@testjavascript.com", expect.any(String)]);
+  expect(stubbedMailSender.send.lastCall.args).toEqual(["yoni@testjavascript.com", expect.any(String)]);
 });
 
 // ✅ TASK: The next two tests below step on each other toe - The 1st one stubs a function, never cleans up and the 2nd fails because of this. Fix it please
 // 💡 TIP: It seems like a good idea to clean-up after the tests
-
 test("When the video production fails, then no email is sent (step on toe1)", async () => {
   // Arrange
   const clipInstructions = testHelper.factorClipInstructions({
@@ -143,7 +142,7 @@ test("When the video production fails, then video-production-failed exception is
     destination: "Mexico",
   });
   const tripClipServiceUnderTest = new TripClipService();
-  sinon.stub(videoProducer, "produce").rejects(new Error("I just failed "));
+  sinon.stub(videoProducer, "produce").rejects(new Error("I just failed"));
 
   // Act
   const generateClipOperation = () => {
@@ -164,7 +163,7 @@ test("When the instructions are invalid, then the response is not succeed", asyn
   // Arrange
   const clipInstructions = testHelper.factorClipInstructions({
     creator: { email: "yoni@testjavascript.com", name: "Yoni" },
-    slogan: undefined, //mandatory
+    slogan: undefined, //A mandatory field  👈
   });
   const tripClipServiceUnderTest = new TripClipService();
 
@@ -256,3 +255,19 @@ test("When YouTube uploader fails, then the response succeed field is false", as
 
 // ✅ TASK: By default, prevent all calls to external HTTP services so your tests won't get affected by 3rd party services
 // 💡 TIP: The lib has a function that supports this
+
+// ✅ TASK: 123
+// 💡 TIP: 456
+test("When the trip date is today after 3am, then weather info cant get so not succeeded response will arrive", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({ startDate: new Date(), endDate: new Date() });
+  const after3AMToday = new Date().setHours(4);
+  sinon.useFakeTimers(after3AMToday);
+  const tripClipServiceUnderTest = new TripClipService();
+
+  // Act
+  const receivedResult = await tripClipServiceUnderTest.generateClip(clipInstructions);
+
+  // Assert
+  expect(receivedResult.succeed).toBe(false);
+});

@@ -63,8 +63,45 @@ test("When video instructions are valid, then a success email should be sent to 
 // 💡 Tip: There's no need to use the real email provider, we can just pass an empty function (anonymous spy/stub) and check whether it was called appropriately
 // The constructor of the TripClipService welcomes custom email providers
 
-// ✅ TASK: The next two tests below step on each other toe - The 1st one stubs a function, never cleans up and the 2nd fails because of this. Fix it please
+// ✅ TASK: The next two tests below (uncomment the tests) step on each other toe - The 1st one stubs a function, never cleans up and the 2nd fails because of this. Fix it please
 // 💡 TIP: It seems like a good idea to clean-up after the tests
+
+// test("When the video production fails, then no email is sent (step on toe1)", async () => {
+//   // Arrange
+//   const clipInstructions = testHelper.factorClipInstructions({
+//     creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+//     destination: "Mexico",
+//   });
+//   const tripClipServiceUnderTest = new TripClipService();
+//   sinon.stub(videoProducer, "produce").rejects(new Error("I just failed "));
+//   const spyOnMailer = sinon.stub(mailSender, "send");
+
+//   // Act
+//   try {
+//     await tripClipServiceUnderTest.generateClip(clipInstructions);
+//   } catch (e) {
+//     //We don't care about the error here
+//   }
+
+//   // Assert
+//   expect(spyOnMailer.called).toBe(false);
+// });
+
+// test("When video instructions are valid, then a success email should be sent to creator (step on toe2)", async () => {
+//   // Arrange
+//   const clipInstructions = testHelper.factorClipInstructions({
+//     creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+//     destination: "Mexico",
+//   });
+//   const tripClipServiceUnderTest = new TripClipService();
+//   const spyOnMailer = sinon.stub(mailSender, "send");
+
+//   // Act
+//   await tripClipServiceUnderTest.generateClip(clipInstructions);
+
+//   // Assert
+//   expect(spyOnMailer.lastCall.args).toEqual(["yoni@testjavascript.com", expect.any(String)]);
+// });
 
 // ✅ TASK: Test that when the VideoProducer.produce operation operation fails, an exception is thrown
 // with a property name: 'video-production-failed'

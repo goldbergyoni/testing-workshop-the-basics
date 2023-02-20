@@ -4,9 +4,8 @@ const supertest = require("supertest");
 const { initializeServer, stopServer } = require("../../../api/products-api");
 
 let expressApp;
-beforeAll(async (done) => {
+beforeAll(async () => {
   expressApp = await initializeServer();
-  done();
 });
 
 beforeEach(() => {
@@ -14,9 +13,8 @@ beforeEach(() => {
   sinon.restore();
 });
 
-afterAll(async (done) => {
+afterAll(async () => {
   await stopServer();
-  done();
 });
 
 describe("Integration tests", () => {
