@@ -4,7 +4,7 @@
 
 const sinon = require("sinon");
 const nock = require("nock");
-const util = require("util");
+const importFresh = require("import-fresh");
 const { TripClipService } = require("../trip-clip-service");
 const WeatherProvider = require("../weather-provider");
 const mailSender = require("../mail-sender");
@@ -256,14 +256,38 @@ test("When YouTube uploader fails, then the response succeed field is false", as
 // ✅ TASK: By default, prevent all calls to external HTTP services so your tests won't get affected by 3rd party services
 // 💡 TIP: The lib has a function that supports this
 
-// ✅ TASK: 123
-// 💡 TIP: 456
+// ✅ TASK: The weather service can't and shouldn't predict weather for the same day if it's after 3am
+// Ensure that when the trip date is today after 3am, the response succeeded field is false
+// 💡 TIP: Use Sinon fake timers to control the time: https://sinonjs.org/releases/latest/fake-timers/
 test("When the trip date is today after 3am, then weather info cant get so not succeeded response will arrive", async () => {
   // Arrange
   const clipInstructions = testHelper.factorClipInstructions({ startDate: new Date(), endDate: new Date() });
   const after3AMToday = new Date().setHours(4);
   sinon.useFakeTimers(after3AMToday);
   const tripClipServiceUnderTest = new TripClipService();
+
+  // Act
+  const receivedResult = await tripClipServiceUnderTest.generateClip(clipInstructions);
+
+  // Assert
+  expect(receivedResult.succeed).toBe(false);
+});
+
+// ✅ TASK: With regard to the test above (weather before 3 am), ensure to clean-up the fake timers between tests
+// 💡 TIP: Use Sinon fake timers to control the time: https://sinonjs.org/releases/latest/fake-timers/
+
+// ✅ TASK: The clip service is using the instructions validator  (instructions-validator.js) to validate the input.
+// Stub the validator to return validation failure with reason 'no-photos', ensure that the generateClip response is not succeeded and it includes the reason
+// 💡 TIP: You might struggle a bit to stub the validator, why? Hint: see how the the 'trip-clip-service' imports the validator
+// 💡 TIP: You may need to use 'jest.resetModules()'
+test.only("When validations fails due to 'no photos', then the generate clip should return succeeded equals false", async () => {
+  // Arrange
+  jest.resetModules();
+  const instructionsValidator = require("../instructions-validator");
+  sinon.stub(instructionsValidator, "validate").returns({ succeeded: false, failures: ["no-photos"] });
+  const { TripClipService } = require("../trip-clip-service");
+  const tripClipServiceUnderTest = new TripClipService();
+  const clipInstructions = testHelper.factorClipInstructions();
 
   // Act
   const receivedResult = await tripClipServiceUnderTest.generateClip(clipInstructions);

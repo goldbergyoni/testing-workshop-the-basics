@@ -1,7 +1,7 @@
 const DefaultWeatherProvider = require("./weather-provider");
 const defaultMailSender = require("./mail-sender");
 const defaultVideoProducer = require("./video-producer");
-const instructionsValidator = require("./instructions-validator");
+const { validate } = require("./instructions-validator");
 const dataAccess = require("./data-access");
 const { default: Axios } = require("axios");
 const subtitlesProvider = require("./subtitles-provider");
@@ -43,7 +43,7 @@ function TripClipService(
         invalidInputException.code = "invalidInput";
         throw invalidInputException;
       }
-      const validationResult = instructionsValidator.validate(instructions);
+      const validationResult = validate(instructions);
       result.instructionsValidation = validationResult;
       if (!result.instructionsValidation.succeeded) {
         return result;
