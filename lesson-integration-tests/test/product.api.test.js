@@ -5,14 +5,12 @@ const {
   stopServer
 } = require("../products-api");
 let expressApp;
-beforeAll(async (done) => {
+beforeAll(async () => {
   expressApp = await initializeServer();
-  done();
 });
 
-afterAll(async (done) => {
+afterAll(async () => {
   await stopServer();
-  done();
 });
 
 

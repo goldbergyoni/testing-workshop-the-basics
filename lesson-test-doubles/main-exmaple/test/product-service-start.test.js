@@ -73,6 +73,7 @@ test("When adding a product on 1st day of a month, an error is thrown back", asy
   // Arrange
   const productServiceUnderTest = new ProductsService();
   const firstDayOfMonth = new Date().setDate(2);
+  fakeClock.restore();
   sinon.useFakeTimers(firstDayOfMonth);
 
   // Act
