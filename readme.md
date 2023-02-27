@@ -16,8 +16,8 @@ This repository holds various materials, demos and instructions for the workshop
 ## Preparation
 As we meet in the classroom we wish to spend our precious time on interesting development challenges rather than machine setup. Make sure to prepare your machine aforehand. Should you encounter any issue - please open an issue within this repo and I'll be sure to assist shortly
 
-### ✔ 1 Install Node.JS > v10.x
-Install Node.JS LTS (any version that is beyond v10) [from this website](https://nodejs.org/en/) - just download and progress within the installation wizard
+### ✔ 1 Install Node.JS >= 18.1.0
+Install Node.JS LTS (or any version that is beyond v18.1.0) [from this website](https://nodejs.org/en/) - just download and progress within the installation wizard
 
 ### ✔ 2 Ensure Node is installed correctly
 Open your favourite terminal (Windows: command prompt) and type 'NPM verson'. The output should confirm that version 8.9.x is indeed installed
