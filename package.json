@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --detectOpenHandles",
-    "test:dev": "jest --watch --verbose --silent",
+    "test:dev": "jest --watch --verbose false",
     "test:dev:verbose": "jest --watch --verbose",
     "test:withDocker": "docker run -n myMongo -d mongo -storageEngine inMemory && npm t"
   },

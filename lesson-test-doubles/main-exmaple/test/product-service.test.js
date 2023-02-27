@@ -23,9 +23,11 @@ describe("Add product", () => {
       // Arrange
       const productService = new ProductsService();
       nock.cleanAll();
-      const emailIntercept = nock("http://email-service.com").post("/api").reply(200, {
-        success: true,
-      });
+      const emailIntercept = nock("http://email-service.com")
+        .post("/api")
+        .reply(200, {
+          success: true,
+        });
 
       // Act
       await productService.addProduct("Harry Potter", 300, "Books");
@@ -55,7 +57,9 @@ describe("Add product", () => {
       await productServiceUnderTest.addProduct(newBookName, 180, "Books");
 
       // Assert
-      const foundedBook = await productServiceUnderTest.getProductByName(newBookName);
+      const foundedBook = await productServiceUnderTest.getProductByName(
+        newBookName
+      );
       expect(foundedBook.name).toBe(newBookName);
     });
 
@@ -90,13 +94,19 @@ describe("Add product", () => {
       const productServiceUnderTest = new ProductsService();
       const productNameWhichIsEmpty = undefined;
       nock.cleanAll();
-      const emailRequestIntercept = nock("http://email-service.com").post("/api").reply(200, {
-        success: true,
-      });
+      const emailRequestIntercept = nock("http://email-service.com")
+        .post("/api")
+        .reply(200, {
+          success: true,
+        });
 
       // Act
       try {
-        await productServiceUnderTest.addProduct(productNameWhichIsEmpty, 200, "Books");
+        await productServiceUnderTest.addProduct(
+          productNameWhichIsEmpty,
+          200,
+          "Books"
+        );
       } catch (e) {
         //ignore errors, we care only about the email
       }
@@ -114,7 +124,11 @@ describe("Add product", () => {
       });
 
       // Act
-      const receivedResult = await productServiceUnderTest.addProduct("War & Peace", 200, "Books");
+      const receivedResult = await productServiceUnderTest.addProduct(
+        "War & Peace",
+        200,
+        "Books"
+      );
 
       // Assert
       expect(receivedResult.succeeded).toBe(true);

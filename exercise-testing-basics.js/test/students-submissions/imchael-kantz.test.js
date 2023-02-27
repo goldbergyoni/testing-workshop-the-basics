@@ -2,10 +2,9 @@
 // ✅ Whenever you see this icon, there's a TASK for you
 // 💡 - This is an ADVICE symbol, it will appear nearby most tasks and help you in fulfilling the tasks
 
-const testHelper = require("./test-helpers");
-const usersService = require("../users-service");
-const jestExtended = require("jest-extended");
-const UserService = require("../users-service");
+const UserService = require("../../users-service");
+
+// const UserService = require("../users-service");
 
 // ✅ TASK: Run this file tests, you should see at least see this simple test below 👇 pass
 // 💡 TIP: This is how to achieve this:

@@ -15,7 +15,11 @@ function TripClipService(
   this.weatherProvider = new WeatherProvider();
   this.mailSender = mailSender;
 
-  this.generateVideoScript = function (instructions, forecastedWeather, subtitles) {
+  this.generateVideoScript = function (
+    instructions,
+    forecastedWeather,
+    subtitles
+  ) {
     let succeeded;
     if (process.env.MANDATORY_SUBTITLES === "true" && !subtitles) {
       throw new Error("Subtitles are mandatory but empty");
@@ -39,7 +43,9 @@ function TripClipService(
 
       //validation
       if (!instructions) {
-        const invalidInputException = new Error("Some mandatory property was not provided");
+        const invalidInputException = new Error(
+          "Some mandatory property was not provided"
+        );
         invalidInputException.code = "invalidInput";
         throw invalidInputException;
       }
@@ -62,14 +68,23 @@ function TripClipService(
 
       // Generate video, send email and save in DB
       const subtitles = subtitlesProvider(instructions);
-      const videoScript = this.generateVideoScript(instructions, forecastedWeather, subtitles);
+      const videoScript = this.generateVideoScript(
+        instructions,
+        forecastedWeather,
+        subtitles
+      );
       const videoURL = await this.videoProducer.produce(videoScript);
-      await this.mailSender.send(instructions.creator.email, "Your video is ready");
+      await this.mailSender.send(
+        instructions.creator.email,
+        "Your video is ready"
+      );
       new dataAccess().save(instructions, true, videoURL);
 
       //Upload to YouTube, uncomment this lines when ready to test this
       Axios.defaults.validateStatus = () => true;
-      const YouTubeResponse = await Axios.post(`http://like-youtube.com/upload?url=${videoURL}`);
+      const YouTubeResponse = await Axios.post(
+        `http://like-youtube.com/upload?url=${videoURL}`
+      );
       if (YouTubeResponse.status !== 200) {
         result.succeed = false;
         return result;
