@@ -1,2 +1,5 @@
-const service1 = require("./service1");
-module.exports = { print: () => console.log(service1()) };
+const { print } = require("./service1");
+module.exports = { print: () => console.log(print()) };
+
+
+    
