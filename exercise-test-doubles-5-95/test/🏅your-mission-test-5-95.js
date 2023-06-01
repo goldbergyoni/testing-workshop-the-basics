@@ -29,8 +29,8 @@ test("When the instructions are valid, then get back a successful response", asy
   const receivedResult = await tripClipServiceUnderTest.generateClip(clipInstructions);
 
   // Assert
-  expect(receivedResult.succeed).toBe(true);
-}); 
+  //  💡 TIP: Ensure that the result 'succeed' property is true
+});
 
 // ✅ TASK: Test that when a clip was generated successfully, an email is sent to the creator
 // 💡 TIP: A spy or stub might be a good fit for this mission. What are the advantages of using stub?
