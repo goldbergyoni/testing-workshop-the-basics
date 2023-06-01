@@ -28,6 +28,20 @@ function TripClipService(
     }; //pseudo result
   };
 
+  // Input example:
+  // {
+  //   creator: {
+  //     name: "Yoni Goldberg",
+  //     email: "yoni@testjavascript.com",
+  //   },
+  //   destination: countriesList.countries.US,
+  //   startDate: new Date(new Date().setDate(today.getDate() + 7)),
+  //   endDate: new Date(new Date().setDate(today.getDate() + 30)),
+  //   photos: ["beach.jpg"],
+  //   tips: ["Must eat at the Italian restaurant!"],
+  //   slogan: "It was amazing",
+  //   background: "green-grass",
+  // }
   this.generateClip = async function (instructions) {
     try {
       //initialize result

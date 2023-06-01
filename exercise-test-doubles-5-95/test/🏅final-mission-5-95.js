@@ -280,7 +280,7 @@ test("When the trip date is today after 3am, then weather info cant get so not s
 // Stub the validator to return validation failure with reason 'no-photos', ensure that the generateClip response is not succeeded and it includes the reason
 // 💡 TIP: You might struggle a bit to stub the validator, why? Hint: see how the the 'trip-clip-service' imports the validator
 // 💡 TIP: You may need to use 'jest.resetModules()'
-test.only("When validations fails due to 'no photos', then the generate clip should return succeeded equals false", async () => {
+test("When validations fails due to 'no photos', then the generate clip should return succeeded equals false", async () => {
   // Arrange
   jest.resetModules();
   const instructionsValidator = require("../instructions-validator");

@@ -13,8 +13,8 @@ const videoProducer = require("../video-producer");
 const testHelper = require("./test-helpers");
 const DataAccess = require("../data-access");
 
-// ✅ TASK: The weather service can't and shouldn't predict weather for the same day if it's before 3am (too late)
-// Ensure that when the trip date is today before 3am, the response succeeded field is false
+// ✅ TASK: The weather service can't and shouldn't predict weather for the same day if it's after 3am (too late)
+// Ensure that when the trip date is today after 3am, the response succeeded field is false
 // 💡 TIP: Use Sinon fake timers to control the time: https://sinonjs.org/releases/latest/fake-timers/
 
 // ✅ TASK: With regard to the test above (weather before 3 am), ensure to clean-up the fake timers between tests
