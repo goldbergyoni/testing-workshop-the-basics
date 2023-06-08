@@ -1,5 +1,8 @@
 let allUsers = [];
 
+class ValidError extends Error{}
+class NotValid extends Error{}
+
 function UserService(config) {
     this.config = config;
     
@@ -10,7 +13,7 @@ function UserService(config) {
         };
 
         if (!userToValidate) {
-            throw new Error('No user was provided');
+            throw new ValidError('No user was provided');
         }
 
         if (!userToValidate.name || !userToValidate.familyName) {
@@ -47,4 +50,4 @@ function UserService(config) {
         });
     }
 }
-module.exports = UserService;
+module.exports = {UserService,ValidError};
