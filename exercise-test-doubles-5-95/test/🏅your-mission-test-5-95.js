@@ -9,6 +9,7 @@ const util = require("util");
 const { TripClipService } = require("../trip-clip-service");
 const WeatherProvider = require("../weather-provider");
 const mailSender = require("../mail-sender");
+const instructionsValidator = require("../instructions-validator");
 const videoProducer = require("../video-producer");
 const testHelper = require("./test-helpers");
 const DataAccess = require("../data-access");
@@ -30,6 +31,7 @@ test("When the instructions are valid, then get back a successful response", asy
 
   // Assert
   //  💡 TIP: Ensure that the result 'succeed' property is true
+  expect(receivedResult.succeed).toBe(true);
 });
 
 // ✅ TASK: Test that when a clip was generated successfully, an email is sent to the creator
@@ -42,26 +44,88 @@ test("When video instructions are valid, then a success email should be sent to 
     destination: "Mexico",
   });
   const tripClipServiceUnderTest = new TripClipService();
+//        await this.mailSender.send(instructions.creator.email, "Your video is ready");
+
+  sinon.stub(mailSender, 'send');
+  // Act
+  await tripClipServiceUnderTest.generateClip(clipInstructions);
+
+  // Assert
+  // 💡 TIP: Ensure that the stub or spy was called. mailerListener.called should be true
+  expect(mailSender.send.called).toBe(true);
+  // mailSender.send.restore();
+});
+
+// ✅ TASK: In the last test above, ensure that the right params were passed to the mailer. Consider whether to check that exact values or the param existence and types
+// 💡 TIP: Sometimes it's not recommended to rely on specific string that might change often and break the tests
+test("When video instructions are valid, then a success email should be sent to creator with correct values", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({
+    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+    destination: "Mexico",
+  });
+  const tripClipServiceUnderTest = new TripClipService();
+
+  sinon.stub(mailSender, 'send');
+  // Act
+  await tripClipServiceUnderTest.generateClip(clipInstructions);
+
+  // Assert
+  // 💡 TIP: Ensure that the stub or spy was called. mailerListener.called should be true
+  expect(mailSender.send.withArgs(clipInstructions.creator.email, "Your video is ready").called).toBe(true);
+  // mailSender.send.restore();
+});
+
+// ✅ TASK: In the last test, ensure that the the real mailer was not called because you are charged for every outgoing email
+// 💡 TIP: The mailer logs to the console, ensure that this string is not there
+// 💡 TIP: If the real mailer is called, consider switching to stub
+test("When video instructions are valid, real mailer is not called in testing", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({
+    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+    destination: "Mexico",
+  });
+  const tripClipServiceUnderTest = new TripClipService();
+
+  sinon.stub(mailSender, 'send');
+
+  const spy = sinon.spy(console, "log");
 
   // Act
   await tripClipServiceUnderTest.generateClip(clipInstructions);
 
   // Assert
   // 💡 TIP: Ensure that the stub or spy was called. mailerListener.called should be true
+  expect(spy.withArgs("Im the real mailer").called).toBe(false);
+  mailSender.send.restore();
+  spy.restore();
 });
-
-// ✅ TASK: In the last test above, ensure that the right params were passed to the mailer. Consider whether to check that exact values or the param existence and types
-// 💡 TIP: Sometimes it's not recommended to rely on specific string that might change often and break the tests
-
-// ✅ TASK: In the last test, ensure that the the real mailer was not called because you are charged for every outgoing email
-// 💡 TIP: The mailer logs to the console, ensure that this string is not there
-// 💡 TIP: If the real mailer is called, consider switching to stub
 
 // ✅ TASK: In relation to the test above, achieve the same result with 'anonymous spy' (or anonymous stub) - Pass the anonymous test double to the constructor of the SUT
 // 💡 TIP: Here's an anonymous spy syntax:
 // 💡 sinon.spy() // no args passed
 // 💡 Tip: There's no need to use the real email provider, we can just pass an empty function (anonymous spy/stub) and check whether it was called appropriately
 // The constructor of the TripClipService welcomes custom email providers
+test("When video instructions are valid, custom mailer should be called", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({
+    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+    destination: "Mexico",
+  });
+
+  const spy = sinon.spy();
+
+  const tripClipServiceUnderTest = new TripClipService({
+    send: spy
+  });
+  
+
+  // Act
+  await tripClipServiceUnderTest.generateClip(clipInstructions);
+
+  // Assert
+  expect(spy.called).toBe(true);
+});
 
 // ✅ TASK: The next two tests below (uncomment the tests) step on each other toe - The 1st one stubs a function, never cleans up and the 2nd fails because of this. Fix it please
 // 💡 TIP: It seems like a good idea to clean-up after the tests
@@ -107,10 +171,46 @@ test("When video instructions are valid, then a success email should be sent to 
 // with a property name: 'video-production-failed'
 // 💡 TIP: Use a test double that can change the response of this function and trigger it to throw an error
 // 💡 TIP: This is grey box testing, we mess with the internals but with motivation to test the OUTCOME of the box
+test("When video produce operation fails, then an exception is thrown", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({
+    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+    destination: "Mexico",
+  });
+
+  const tripClipServiceUnderTest = new TripClipService();
+  const stub = sinon
+    .stub(videoProducer, 'produce')
+    .throws('video-production-failed');
+
+  // Act
+  try { 
+    await tripClipServiceUnderTest.generateClip(clipInstructions);
+  } catch (e) {
+    // Assert
+    expect(e.name).toMatch(/video\-production\-failed/);
+  }
+  stub.restore();
+
+});
 
 // ✅ TASK: Test that when the InstructionsValidator class tells that the input is invalid, then the response is not succeeded
 // 💡 TIP: We can achieve this by stubbing this class response, but do we need a test double for that?
 // 💡 TIP: Whenever possible avoid test doubles
+test("When the input is invalid, then response is not succeeded", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({
+    slogan: null,
+  });
+
+  const tripClipServiceUnderTest = new TripClipService();
+
+  // Act
+  const receivedResult = await tripClipServiceUnderTest.generateClip(clipInstructions);
+
+  // Assert
+  expect(receivedResult.succeed).toBe(false);
+});
 
 // ✅🚀 TASK: Test that when the WeatherProvider returns null, then the result success field is false. There is one challenge
 // to address - This file exports a class, not an instance. To stub it you need to tell Sinon how
@@ -158,4 +258,5 @@ beforeEach(() => {
 
 afterEach(() => {
   nock.cleanAll();
+  sinon.restore();
 });
