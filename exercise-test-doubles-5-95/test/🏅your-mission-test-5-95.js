@@ -13,16 +13,16 @@ const videoProducer = require("../video-producer");
 const testHelper = require("./test-helpers");
 const DataAccess = require("../data-access");
 
+jest.mock("../subtitles-provider");
+const subtitlesProvider = require("../subtitles-provider");
+
 // ✅ TASK: Write a simple test against the trip clip service "generateClip" method- When valid input, then get back a valid response
 //Ensure the the test pass
 // 💡 TIP: Here's the test skeleton
 
 test("When the instructions are valid, then get back a successful response", async () => {
   // Arrange
-  const clipInstructions = testHelper.factorClipInstructions({
-    creator: { name: "Kavita" },
-    destination: "Mexico",
-  });
+  const clipInstructions = testHelper.factorClipInstructions();
   const tripClipServiceUnderTest = new TripClipService();
 
   // Act
@@ -40,10 +40,7 @@ test("When the instructions are valid, then get back a successful response", asy
 // 💡 TIP: This line creates a spy on the the mailer object: const mailerListener = sinon.spy(mailSender, "send");
 test("When video instructions are valid, then a success email should be sent to creator", async () => {
   // Arrange
-  const clipInstructions = testHelper.factorClipInstructions({
-    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
-    destination: "Mexico",
-  });
+  const clipInstructions = testHelper.factorClipInstructions();
   const tripClipServiceUnderTest = new TripClipService();
   const mailerSpy = sinon.spy(mailSender, "send");
 
@@ -59,10 +56,14 @@ test("When video instructions are valid, then a success email should be sent to 
 // 💡 TIP: Sometimes it's not recommended to rely on specific string that might change often and break the tests
 test("When video instructions are valid, then a success email should be sent to creator - checking params", async () => {
   // Arrange
-  const clipInstructions = testHelper.factorClipInstructions({
-    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
-    destination: "Mexico",
-  });
+  const overrideInstructions = {
+    creator: {
+      email: `yoni-${Math.random()}@testjavascript.com`,
+      name: "Yoni",
+    },
+  };
+  const clipInstructions =
+    testHelper.factorClipInstructions(overrideInstructions);
   const tripClipServiceUnderTest = new TripClipService();
   const mailerSpy = sinon.spy(mailSender, "send");
 
@@ -72,7 +73,7 @@ test("When video instructions are valid, then a success email should be sent to 
   // Assert
   // 💡 TIP: Ensure that the stub or spy was called. mailerListener.called should be true
   expect(mailerSpy.lastCall.args).toEqual([
-    "yoni@testjavascript.com",
+    overrideInstructions.creator.email,
     expect.any(String),
   ]);
 });
@@ -82,10 +83,14 @@ test("When video instructions are valid, then a success email should be sent to 
 // 💡 TIP: If the real mailer is called, consider switching to stub
 test("When video instructions are valid, then a success email should be sent to creator - real mailer was not called", async () => {
   // Arrange
-  const clipInstructions = testHelper.factorClipInstructions({
-    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
-    destination: "Mexico",
-  });
+  const overrideInstructions = {
+    creator: {
+      email: `yoni-${Math.random()}@testjavascript.com`,
+      name: "Yoni",
+    },
+  };
+  const clipInstructions =
+    testHelper.factorClipInstructions(overrideInstructions);
   const tripClipServiceUnderTest = new TripClipService();
   const mailerSpy = sinon.stub(mailSender).send.callsFake(async () => {
     console.log("Im the fake mailer");
@@ -97,7 +102,7 @@ test("When video instructions are valid, then a success email should be sent to 
 
   // Assert
   expect(mailerSpy.lastCall.args).toEqual([
-    "yoni@testjavascript.com",
+    overrideInstructions.creator.email,
     expect.any(String),
   ]);
 });
@@ -109,10 +114,7 @@ test("When video instructions are valid, then a success email should be sent to 
 // The constructor of the TripClipService welcomes custom email providers
 test("When video instructions are valid, then a success email should be sent to creator - real mailer was not called using 'anonymous spy'", async () => {
   // Arrange
-  const clipInstructions = testHelper.factorClipInstructions({
-    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
-    destination: "Mexico",
-  });
+  const clipInstructions = testHelper.factorClipInstructions();
   const doubleMailSender = {
     send: sinon.spy(),
   };
@@ -174,10 +176,7 @@ test("When video instructions are valid, then a success email should be sent to 
 // 💡 TIP: This is grey box testing, we mess with the internals but with motivation to test the OUTCOME of the box
 test("When the VideoProducer.produce operation operation fails, then an exception is thrown", async () => {
   //Arrange
-  const clipInstructions = testHelper.factorClipInstructions({
-    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
-    destination: "Mexico",
-  });
+  const clipInstructions = testHelper.factorClipInstructions();
   const tripClipServiceUnderTest = new TripClipService();
   sinon.stub(videoProducer).produce.rejects(new Error("I just failed "));
   // Act
@@ -185,23 +184,69 @@ test("When the VideoProducer.produce operation operation fails, then an exceptio
     await tripClipServiceUnderTest.generateClip(clipInstructions);
   };
   // Assert
-  expect(generateClipMethodWrapper).rejects.toThrowError(
+  await expect(generateClipMethodWrapper).rejects.toThrowError(
     expect.objectContaining({ name: "video-production-failed" })
   );
 });
 // ✅ TASK: Test that when the InstructionsValidator class tells that the input is invalid, then the response is not succeeded
 // 💡 TIP: We can achieve this by stubbing this class response, but do we need a test double for that?
 // 💡 TIP: Whenever possible avoid test doubles
+test("When the InstructionsValidator class tells that the input is invalid, Then the response is not succeeded", async () => {
+  //Arrange
+  const sloganOverrideToInstructions = { slogan: undefined };
+  const clipInstructions = testHelper.factorClipInstructions(
+    sloganOverrideToInstructions
+  );
+  const tripClipServiceUnderTest = new TripClipService();
 
+  // Act
+  const receivedResult = await tripClipServiceUnderTest.generateClip(
+    clipInstructions
+  );
+
+  // Assert
+  expect(receivedResult.succeed).toBe(false);
+});
 // ✅🚀 TASK: Test that when the WeatherProvider returns null, then the result success field is false. There is one challenge
 // to address - This file exports a class, not an instance. To stub it you need to tell Sinon how
 // 💡 TIP: Use the following syntax:
 // sinon.stub(object.prototype , "method-name")
+test("When the WeatherProvider returns null, Then the result success field is false", async () => {
+  //Arrange
+  const clipInstructions = testHelper.factorClipInstructions();
+  const tripClipServiceUnderTest = new TripClipService();
+  sinon.stub(WeatherProvider.prototype).getWeather.returns(null);
+
+  // Act
+  const receivedResult = await tripClipServiceUnderTest.generateClip(
+    clipInstructions
+  );
+
+  // Assert
+  expect(receivedResult.succeed).toBe(false);
+});
 
 // ✅ TASK: Use mocks to test that when the data access class was called, the right params are passed and it's called only one time
 // After the test pass, refactor a single param in the data access class and note how the tests fails also everything still works
 // 💡 TIP: Use Sinon mock fluent interface to define as many expectations as possible in a single line
+test("When the data access class was called, The right params are passed and it's called only one time", async () => {
+  //Arrange
+  const clipInstructions = testHelper.factorClipInstructions();
+  const tripClipServiceUnderTest = new TripClipService();
+  const dataAccessMock = sinon.mock(DataAccess.prototype);
 
+  dataAccessMock
+    .expects("save")
+    .exactly(1)
+    .withExactArgs(clipInstructions, true, sinon.match.string)
+    .returns(Promise.resolve(false));
+
+  //Act
+  await tripClipServiceUnderTest.generateClip(clipInstructions);
+
+  //Assert
+  dataAccessMock.verify();
+});
 // ✅🚀 TASK: Ensure that when the subtitle object that is returned by 'subtitles-provider' is null, an exception is thrown
 // 💡 TIP: 'subtitles-provider' exports a function, not object, Sinon might not be helpful here. Consider using Proxyquire or Jest mock
 // 💡 TIP: If using Jest mock for the mission, at start *before* importing the subtitles provider, mock this module:
@@ -209,32 +254,61 @@ test("When the VideoProducer.produce operation operation fails, then an exceptio
 //  Then within the test, set the desired response: subtitlesProvider.mockReturnValue({your desired value});
 test("When subtitles are empty, then the response succeed is false", async () => {
   // Arrange
-  const clipInstructions = testHelper.factorClipInstructions({
-    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
-  });
+  const clipInstructions = testHelper.factorClipInstructions();
   const tripClipServiceUnderTest = new TripClipService();
   process.env.MANDATORY_SUBTITLES = "true";
+  subtitlesProvider.mockReturnValue(null);
 
   // Act
+  const generateClipFunction = async () => {
+    await tripClipServiceUnderTest.generateClip(clipInstructions);
+  };
 
   // Assert
+  await expect(generateClipFunction).rejects.toThrowError(
+    expect.objectContaining({ name: "video-production-failed" })
+  );
 });
 
 // ✅ TASK: Ensure that all calls to YouTube REST service are not taking place and instead a default value is returned for all tests
 // 💡 TIP: Use interceptor and apply it globally for all tests in the file
-
-// ✅ TASK: Ensure that when YouTube REST service returns an error,  then the result success field is false
-// 💡 TIP: This level of interception should happen in a specific test
-// 💡 TIP: Since the request to YouTube has a dynamic string, specify the path using a RegEx -> .post('/upload.*$/')
-
-// ✅🚀 TASK: By default, prevent all calls to external HTTP services so your tests won't get affected by 3rd party services
-// 💡 TIP: The lib has a function that supports this
-
 beforeEach(() => {
   // 💡 TIP: Leave this code, it's required to prevent access to the real YouTube
   nock("http://like-youtube.com")
     .post(/upload.*$/)
     .reply(200, { status: "all-good" });
+  delete process.env.MANDATORY_SUBTITLES;
+});
+
+// ✅ TASK: Ensure that when YouTube REST service returns an error,  then the result success field is false
+// 💡 TIP: This level of interception should happen in a specific test
+// 💡 TIP: Since the request to YouTube has a dynamic string, specify the path using a RegEx -> .post('/upload.*$/')
+test("When YouTube REST service returns an error, Then the result success field is false", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions();
+  const tripClipServiceUnderTest = new TripClipService();
+  nock.cleanAll();
+  nock("http://like-youtube.com")
+    .post(/upload.*$/)
+    .reply(500, { status: "not-good" });
+
+  // Act
+  const receivedResult = await tripClipServiceUnderTest.generateClip(
+    clipInstructions
+  );
+
+  // Assert
+  expect(receivedResult.succeed).toBe(false);
+});
+
+// ✅🚀 TASK: By default, prevent all calls to external HTTP services so your tests won't get affected by 3rd party services
+// 💡 TIP: The lib has a function that supports this
+beforeAll(() => {
+  nock.disableNetConnect();
+});
+
+afterAll(() => {
+  nock.enableNetConnect();
 });
 
 afterEach(() => {
