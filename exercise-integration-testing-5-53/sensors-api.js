@@ -4,6 +4,9 @@ const axios = require("axios");
 const bodyParser = require("body-parser");
 const sensorsDal = require("./sensors-dal");
 
+let serverConnection;
+
+
 const initializeAPI = () => {
   const expressApp = express();
   const router = express.Router();
@@ -13,7 +16,7 @@ const initializeAPI = () => {
     })
   );
   expressApp.use(bodyParser.json());
-  expressApp.listen();
+  serverConnection = expressApp.listen();
 
   // add new event
   router.post("/sensor-events", async (req, res, next) => {
@@ -51,6 +54,16 @@ const initializeAPI = () => {
   return expressApp;
 };
 
+const stopServer = async () => {
+  return new Promise((resolve, reject) => {
+    serverConnection.close(() => {
+      resolve();
+    })
+  })
+}
+
 module.exports = {
-  initializeAPI
+  initializeAPI, stopServer
 };
+
+initializeAPI();
