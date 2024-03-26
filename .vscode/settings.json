@@ -1,5 +1,5 @@
 {
-    "git.enabled": false,
+    "git.enabled": true,
     "template-string-converter.validLanguages": [
         "typescript",
         "javascript",
