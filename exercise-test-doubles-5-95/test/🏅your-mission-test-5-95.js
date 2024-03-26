@@ -12,6 +12,8 @@ const mailSender = require("../mail-sender");
 const videoProducer = require("../video-producer");
 const testHelper = require("./test-helpers");
 const DataAccess = require("../data-access");
+jest.mock("../subtitles-provider");
+const subtitlesProvider = require("../subtitles-provider");
 
 // ✅ TASK: Write a simple test against the trip clip service "generateClip" method- When valid input, then get back a valid response
 //Ensure the the test pass
@@ -30,6 +32,7 @@ test("When the instructions are valid, then get back a successful response", asy
 
   // Assert
   //  💡 TIP: Ensure that the result 'succeed' property is true
+  expect(receivedResult.succeed).toBe(true);
 });
 
 // ✅ TASK: Test that when a clip was generated successfully, an email is sent to the creator
@@ -42,12 +45,15 @@ test("When video instructions are valid, then a success email should be sent to 
     destination: "Mexico",
   });
   const tripClipServiceUnderTest = new TripClipService();
+  const mailerListener = sinon.spy(mailSender, "send");
 
   // Act
   await tripClipServiceUnderTest.generateClip(clipInstructions);
 
   // Assert
   // 💡 TIP: Ensure that the stub or spy was called. mailerListener.called should be true
+  expect(mailerListener.called).toBe(true);
+  expect(mailerListener.lastCall.args).toEqual(["yoni@testjavascript.com", expect.any(String)]);
 });
 
 // ✅ TASK: In the last test above, ensure that the right params were passed to the mailer. Consider whether to check that exact values or the param existence and types
@@ -66,42 +72,42 @@ test("When video instructions are valid, then a success email should be sent to 
 // ✅ TASK: The next two tests below (uncomment the tests) step on each other toe - The 1st one stubs a function, never cleans up and the 2nd fails because of this. Fix it please
 // 💡 TIP: It seems like a good idea to clean-up after the tests
 
-// test("When the video production fails, then no email is sent (step on toe1)", async () => {
-//   // Arrange
-//   const clipInstructions = testHelper.factorClipInstructions({
-//     creator: { email: "yoni@testjavascript.com", name: "Yoni" },
-//     destination: "Mexico",
-//   });
-//   const tripClipServiceUnderTest = new TripClipService();
-//   sinon.stub(videoProducer, "produce").rejects(new Error("I just failed "));
-//   const spyOnMailer = sinon.stub(mailSender, "send");
+test("When the video production fails, then no email is sent (step on toe1)", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({
+    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+    destination: "Mexico",
+  });
+  const tripClipServiceUnderTest = new TripClipService();
+  sinon.stub(videoProducer, "produce").rejects(new Error("I just failed "));
+  const spyOnMailer = sinon.stub(mailSender, "send");
 
-//   // Act
-//   try {
-//     await tripClipServiceUnderTest.generateClip(clipInstructions);
-//   } catch (e) {
-//     //We don't care about the error here
-//   }
+  // Act
+  try {
+    await tripClipServiceUnderTest.generateClip(clipInstructions);
+  } catch (e) {
+    //We don't care about the error here
+  }
 
-//   // Assert
-//   expect(spyOnMailer.called).toBe(false);
-// });
+  // Assert
+  expect(spyOnMailer.called).toBe(false);
+});
 
-// test("When video instructions are valid, then a success email should be sent to creator (step on toe2)", async () => {
-//   // Arrange
-//   const clipInstructions = testHelper.factorClipInstructions({
-//     creator: { email: "yoni@testjavascript.com", name: "Yoni" },
-//     destination: "Mexico",
-//   });
-//   const tripClipServiceUnderTest = new TripClipService();
-//   const spyOnMailer = sinon.stub(mailSender, "send");
+test("When video instructions are valid, then a success email should be sent to creator (step on toe2)", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({
+    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+    destination: "Mexico",
+  });
+  const tripClipServiceUnderTest = new TripClipService();
+  const spyOnMailer = sinon.stub(mailSender, "send");
 
-//   // Act
-//   await tripClipServiceUnderTest.generateClip(clipInstructions);
+  // Act
+  await tripClipServiceUnderTest.generateClip(clipInstructions);
 
-//   // Assert
-//   expect(spyOnMailer.lastCall.args).toEqual(["yoni@testjavascript.com", expect.any(String)]);
-// });
+  // Assert
+  expect(spyOnMailer.lastCall.args).toEqual(["yoni@testjavascript.com", expect.any(String)]);
+});
 
 // ✅ TASK: Test that when the VideoProducer.produce operation operation fails, an exception is thrown
 // with a property name: 'video-production-failed'
@@ -133,10 +139,15 @@ test("When subtitles are empty, then the response succeed is false", async () =>
   });
   const tripClipServiceUnderTest = new TripClipService();
   process.env.MANDATORY_SUBTITLES = "true";
+  subtitlesProvider.mockReturnValue(null);
 
   // Act
+  const generateClipMethodWrapper = async () => {
+    await tripClipServiceUnderTest.generateClip(clipInstructions);
+  };
 
   // Assert
+  await expect(generateClipMethodWrapper).rejects.toThrow();
 });
 
 // ✅ TASK: Ensure that all calls to YouTube REST service are not taking place and instead a default value is returned for all tests
@@ -158,4 +169,6 @@ beforeEach(() => {
 
 afterEach(() => {
   nock.cleanAll();
+  sinon.restore();
+  jest.resetAllMocks();
 });
