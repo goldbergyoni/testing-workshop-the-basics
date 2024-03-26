@@ -17,6 +17,14 @@ const DataAccess = require("../data-access");
 //Ensure the the test pass
 // 💡 TIP: Here's the test skeleton
 
+jest.mock('../mail-sender', () => ({
+  send: () => {},
+}));
+
+beforeEach(() => {
+  jest.resetAllMocks();
+})
+
 test("When the instructions are valid, then get back a successful response", async () => {
   // Arrange
   const clipInstructions = testHelper.factorClipInstructions({
@@ -26,10 +34,22 @@ test("When the instructions are valid, then get back a successful response", asy
   const tripClipServiceUnderTest = new TripClipService();
 
   // Act
-  const receivedResult = await tripClipServiceUnderTest.generateClip(clipInstructions);
+  const receivedResult = await tripClipServiceUnderTest.generateClip(
+    clipInstructions
+  );
 
   // Assert
   //  💡 TIP: Ensure that the result 'succeed' property is true
+  expect(receivedResult).toMatchInlineSnapshot(`
+    {
+      "instructionsValidation": {
+        "failures": [],
+        "succeeded": true,
+      },
+      "succeed": true,
+      "videoURL": "undefined",
+    }
+  `);
 });
 
 // ✅ TASK: Test that when a clip was generated successfully, an email is sent to the creator
@@ -42,12 +62,15 @@ test("When video instructions are valid, then a success email should be sent to 
     destination: "Mexico",
   });
   const tripClipServiceUnderTest = new TripClipService();
+  const mailerListener = jest.spyOn(mailSender, 'send')
 
   // Act
   await tripClipServiceUnderTest.generateClip(clipInstructions);
 
   // Assert
   // 💡 TIP: Ensure that the stub or spy was called. mailerListener.called should be true
+  expect(mailerListener).toHaveBeenCalledTimes(1)
+  expect(mailerListener).toHaveBeenCalledWith("yoni@testjavascript.com", "Your video is ready")
 });
 
 // ✅ TASK: In the last test above, ensure that the right params were passed to the mailer. Consider whether to check that exact values or the param existence and types
@@ -66,42 +89,42 @@ test("When video instructions are valid, then a success email should be sent to 
 // ✅ TASK: The next two tests below (uncomment the tests) step on each other toe - The 1st one stubs a function, never cleans up and the 2nd fails because of this. Fix it please
 // 💡 TIP: It seems like a good idea to clean-up after the tests
 
-// test("When the video production fails, then no email is sent (step on toe1)", async () => {
-//   // Arrange
-//   const clipInstructions = testHelper.factorClipInstructions({
-//     creator: { email: "yoni@testjavascript.com", name: "Yoni" },
-//     destination: "Mexico",
-//   });
-//   const tripClipServiceUnderTest = new TripClipService();
-//   sinon.stub(videoProducer, "produce").rejects(new Error("I just failed "));
-//   const spyOnMailer = sinon.stub(mailSender, "send");
+test("When the video production fails, then no email is sent (step on toe1)", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({
+    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+    destination: "Mexico",
+  });
+  const tripClipServiceUnderTest = new TripClipService();
+  jest.spyOn(videoProducer, "produce").mockRejectedValueOnce(new Error("I just failed "));
+  const spyOnMailer = jest.spyOn(mailSender, "send");
 
-//   // Act
-//   try {
-//     await tripClipServiceUnderTest.generateClip(clipInstructions);
-//   } catch (e) {
-//     //We don't care about the error here
-//   }
+  // Act
+  try {
+    await tripClipServiceUnderTest.generateClip(clipInstructions);
+  } catch (e) {
+    //We don't care about the error here
+  }
 
-//   // Assert
-//   expect(spyOnMailer.called).toBe(false);
-// });
+  // Assert
+  expect(spyOnMailer).not.toHaveBeenCalled();
+});
 
-// test("When video instructions are valid, then a success email should be sent to creator (step on toe2)", async () => {
-//   // Arrange
-//   const clipInstructions = testHelper.factorClipInstructions({
-//     creator: { email: "yoni@testjavascript.com", name: "Yoni" },
-//     destination: "Mexico",
-//   });
-//   const tripClipServiceUnderTest = new TripClipService();
-//   const spyOnMailer = sinon.stub(mailSender, "send");
+test("When video instructions are valid, then a success email should be sent to creator (step on toe2)", async () => {
+  // Arrange
+  const clipInstructions = testHelper.factorClipInstructions({
+    creator: { email: "yoni@testjavascript.com", name: "Yoni" },
+    destination: "Mexico",
+  });
+  const tripClipServiceUnderTest = new TripClipService();
+  const spyOnMailer = jest.spyOn(mailSender, "send");
 
-//   // Act
-//   await tripClipServiceUnderTest.generateClip(clipInstructions);
+  // Act
+  await tripClipServiceUnderTest.generateClip(clipInstructions);
 
-//   // Assert
-//   expect(spyOnMailer.lastCall.args).toEqual(["yoni@testjavascript.com", expect.any(String)]);
-// });
+  // Assert
+  expect(spyOnMailer).toHaveBeenCalledWith("yoni@testjavascript.com", expect.any(String));
+});
 
 // ✅ TASK: Test that when the VideoProducer.produce operation operation fails, an exception is thrown
 // with a property name: 'video-production-failed'
